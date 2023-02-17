@@ -31,6 +31,6 @@
 *.out
 *.app
 
-.vs/
-.Chess/Debug
-
+Chess 3.0/.vs/
+Chess 3.0/Chess/Debug/
+Chess 3.0/Debug/
