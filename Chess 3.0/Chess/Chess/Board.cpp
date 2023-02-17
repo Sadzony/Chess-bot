@@ -46,8 +46,9 @@ int Board::GetHeuristic(PieceColor playerColor)
 {
 	int heuristic = 0;
 	//iterate every square
-	for (int x = MIN_ROW_INDEX; x < MAX_ROW_INDEX; x++) {
-		for (int y = MIN_COL_INDEX; y < MAX_COL_INDEX; y++)
+	
+	for (int y = MIN_COL_INDEX; y < MAX_COL_INDEX; y++) {
+		for (int x = MIN_ROW_INDEX; x < MAX_ROW_INDEX; x++)
 		{
 			// get the piece on the square
 			if (squares[x][y].hasOccupyingPiece())

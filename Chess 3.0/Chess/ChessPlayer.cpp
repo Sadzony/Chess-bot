@@ -11,7 +11,7 @@ using namespace std;
 void ChessPlayer::setupPlayers(ChessPlayer** playerWhite, ChessPlayer** playerBlack, Board* pBoard, GameStatus* pGameStatus, Gameplay* pGamePlay)
 {
 	*playerBlack = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::BLACK);
-	//(*playerBlack)->setAI();
+	(*playerBlack)->setAI();
 
 	*playerWhite = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::WHITE);
 	(*playerWhite)->setAI();
@@ -67,7 +67,7 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>* moveToMake)
 {
 	vecPieces vPieces;
 	unsigned int piecesAvailable = getAllLivePieces(vPieces);
-
+ 	int heuristic = m_pBoard->GetHeuristic(m_colour);
 	// BAD AI !! - for the first piece which can move, choose the first available move
 	bool moveAvailable = false;
 	int randomPiece;
