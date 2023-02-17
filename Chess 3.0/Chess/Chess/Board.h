@@ -30,6 +30,7 @@ public:
 		Square* getSquare(int row, int col);
 
 		Board* hardCopy();
+		int GetHeuristic(PieceColor playerColor);
 		
 };
 
