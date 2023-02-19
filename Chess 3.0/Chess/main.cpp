@@ -547,7 +547,7 @@ void newAITurn()
 
 	// decide and make the move
 	std::shared_ptr<Move> move;
-	bool moveMade = player->chooseAIMove(&move);
+	bool moveMade = player->chooseAIMove(&move, chess->getGameTree());
 	if (!moveMade)
 	{
 		return; // TODO: if this is the case - what next? The chess engine should have detected a checkmate prior to this. 
@@ -764,7 +764,7 @@ void keyFunction(unsigned char key, int x, int y)
         case 'x': case 'X':
 			if(checkMate) 
 			{ 
-				closeGame = true; 
+				closeGame = true;
 				delete chess;
 				chess = nullptr;
 			}

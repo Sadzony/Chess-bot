@@ -13,12 +13,7 @@ class GameStatus;
 class Gameplay;
 class Move;
 
-struct PieceInPostion
-{
-	std::shared_ptr<Piece> piece;
-	int col;
-	int row;
-};
+class GameTree;
 
 typedef vector<PieceInPostion> vecPieces;
 
@@ -32,7 +27,7 @@ public:
 	bool			isAI() { return m_bAI; }
 	unsigned int	getAllLivePieces(vecPieces& vpieces);
 	vector<std::shared_ptr<Move>>	getValidMovesForPiece(PieceInPostion pip);
-	bool			chooseAIMove(std::shared_ptr<Move>* moveToMake);
+	bool			chooseAIMove(std::shared_ptr<Move>* moveToMake, GameTree* gameTree);
 
 protected:
 	PieceColor		getColour() { return m_colour; }

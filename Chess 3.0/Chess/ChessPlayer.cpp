@@ -3,6 +3,7 @@
 #include "Chess\Gameplay.h"
 #include "Chess\Board.h"
 #include "Chess\Piece.h"
+#include "GameTree.h"
 
 using namespace std;
 
@@ -11,7 +12,7 @@ using namespace std;
 void ChessPlayer::setupPlayers(ChessPlayer** playerWhite, ChessPlayer** playerBlack, Board* pBoard, GameStatus* pGameStatus, Gameplay* pGamePlay)
 {
 	*playerBlack = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::BLACK);
-	(*playerBlack)->setAI();
+	//(*playerBlack)->setAI();
 
 	*playerWhite = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::WHITE);
 	(*playerWhite)->setAI();
@@ -63,11 +64,11 @@ vector<std::shared_ptr<Move>> ChessPlayer::getValidMovesForPiece(PieceInPostion 
 
 // chooseAIMove
 // in this method - for an AI chess player - choose a move to make. This is called once per play. 
-bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>* moveToMake)
+bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>* moveToMake, GameTree* gameTree)
 {
 	vecPieces vPieces;
 	unsigned int piecesAvailable = getAllLivePieces(vPieces);
- 	int heuristic = m_pBoard->GetHeuristic(m_colour);
+ 	int heuristic = m_pBoard->GetHeuristic();
 	// BAD AI !! - for the first piece which can move, choose the first available move
 	bool moveAvailable = false;
 	int randomPiece;

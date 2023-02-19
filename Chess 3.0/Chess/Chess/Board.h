@@ -8,7 +8,8 @@ it contains Square objects (which contain a piece, or is empty).
 
 #include "Square.h"
 #include <memory>
-
+#include <vector>
+typedef std::vector<PieceInPostion> vecPieces;
 class Board
 {
 public:
@@ -30,7 +31,8 @@ public:
 		Square* getSquare(int row, int col);
 
 		Board* hardCopy();
-		int GetHeuristic(PieceColor playerColor);
+		int GetHeuristic();
+		vecPieces GetLivePieces(PieceColor playerColor);
 		
 };
 

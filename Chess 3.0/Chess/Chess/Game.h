@@ -15,6 +15,7 @@ relies on the various objects (such as gameplay) to provide results
 #include "Move.h"
 
 class ChessPlayer;
+class GameTree;
 
 class Game
 {
@@ -27,6 +28,8 @@ class Game
 		ChessPlayer* m_PlayerBlack;
 		ChessPlayer* m_PlayerWhite;
 		std::vector<std::shared_ptr<Piece>> m_vecPieces;
+
+		GameTree* gameTree;
 
 	public:
 		Game();
@@ -54,6 +57,7 @@ class Game
 		ChessPlayer* getBlackPlayer() { return m_PlayerBlack;}
 		ChessPlayer* getWhitePlayer() { return m_PlayerWhite; }
 		
+		GameTree* getGameTree() { return gameTree; }
 };
 
 #endif

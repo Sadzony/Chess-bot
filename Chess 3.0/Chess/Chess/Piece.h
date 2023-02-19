@@ -3,6 +3,7 @@
 
 #include "PieceType.h"
 #include "PieceColor.h"
+#include <memory>
 
 class Piece
 {
@@ -15,6 +16,12 @@ class Piece
 		~Piece();
 		PieceType getType();
 		PieceColor getColor();
+};
+struct PieceInPostion
+{
+	std::shared_ptr<Piece> piece;
+	int col;
+	int row;
 };
 
 #endif
