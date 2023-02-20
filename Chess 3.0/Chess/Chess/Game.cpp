@@ -14,7 +14,7 @@ Game::Game()
 
 	ChessPlayer::setupPlayers(&m_PlayerWhite, &m_PlayerBlack ,board, status, gameplay);
 
-	gameTree = new GameTree();
+	gameTree = new GameTree(board, status);
 
 	int x = 1;
 }

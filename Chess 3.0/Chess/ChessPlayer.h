@@ -15,7 +15,7 @@ class Move;
 
 class GameTree;
 
-typedef vector<PieceInPostion> vecPieces;
+typedef vector<PieceInPosition> vecPieces;
 
 class ChessPlayer
 {
@@ -26,7 +26,7 @@ public:
 	void			setAI() { m_bAI = true; }
 	bool			isAI() { return m_bAI; }
 	unsigned int	getAllLivePieces(vecPieces& vpieces);
-	vector<std::shared_ptr<Move>>	getValidMovesForPiece(PieceInPostion pip);
+	vector<std::shared_ptr<Move>>	getValidMovesForPiece(PieceInPosition pip);
 	bool			chooseAIMove(std::shared_ptr<Move>* moveToMake, GameTree* gameTree);
 
 protected:

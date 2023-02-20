@@ -9,7 +9,7 @@ it contains Square objects (which contain a piece, or is empty).
 #include "Square.h"
 #include <memory>
 #include <vector>
-typedef std::vector<PieceInPostion> vecPieces;
+typedef std::vector<PieceInPosition> vecPieces;
 class Board
 {
 public:

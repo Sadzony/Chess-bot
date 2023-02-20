@@ -75,7 +75,7 @@ int Board::GetHeuristic()
 
 vecPieces Board::GetLivePieces(PieceColor playerColor)
 {
-	PieceInPostion pip;
+	PieceInPosition pip;
 	vecPieces outPieces = vecPieces();
 	for (int i = MIN_ROW_INDEX; i < MAX_ROW_INDEX; i++)
 	{

@@ -17,7 +17,7 @@ class Piece
 		PieceType getType();
 		PieceColor getColor();
 };
-struct PieceInPostion
+struct PieceInPosition
 {
 	std::shared_ptr<Piece> piece;
 	int col;

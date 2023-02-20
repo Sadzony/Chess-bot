@@ -32,7 +32,7 @@ unsigned int ChessPlayer::getAllLivePieces(vecPieces& vpieces)
 {
 	vpieces.clear();
 
-	PieceInPostion pip;
+	PieceInPosition pip;
 
 	unsigned int count = 0;
 	for (int i = m_pBoard->MIN_ROW_INDEX; i < m_pBoard->MAX_ROW_INDEX; i++)
@@ -57,7 +57,7 @@ unsigned int ChessPlayer::getAllLivePieces(vecPieces& vpieces)
 	return count;
 }
 
-vector<std::shared_ptr<Move>> ChessPlayer::getValidMovesForPiece(PieceInPostion pip)
+vector<std::shared_ptr<Move>> ChessPlayer::getValidMovesForPiece(PieceInPosition pip)
 {
 	return Gameplay::getValidMoves(m_pGameStatus, m_pBoard, pip.piece, pip.row, pip.col);
 }
