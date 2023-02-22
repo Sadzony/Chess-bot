@@ -23,7 +23,8 @@ void Node::GenerateChildren()
 {
 	//find which player's turn it will be, get their pieces
 	int child_turn = turn + 1;
-	PieceColor playerColor = GetTurnColor(child_turn);
+	PieceColor opposingPlayerColor = GetTurnColor(child_turn);
+	PieceColor playerColor = GetTurnColor(turn);
 	vecPieces livePieces = currentBoard->GetLivePieces(playerColor);
 	for (auto pip : livePieces)
 	{
@@ -35,9 +36,9 @@ void Node::GenerateChildren()
 			Board* nextBoard = new Board(*currentBoard);
 			GameStatus* nextStatus = new GameStatus(*currentStatus);
 			Gameplay::move(nextStatus, nextBoard, move);
-			nextStatus->setPieceEnPassantable(playerColor, NULL);
+			nextStatus->setPieceEnPassantable(opposingPlayerColor, NULL);
 			Node* nextChild = new Node();
-			nextChild->turn = turn;
+			nextChild->turn = child_turn;
 			nextChild->currentBoard = nextBoard;
 			nextChild->currentStatus = nextStatus;
 			nextChild->consequentMove = move;
@@ -56,6 +57,7 @@ GameTree::GameTree(Board* p_root, GameStatus* p_status)
 	root->currentStatus = new GameStatus(*p_status);
 	root->heuristic = p_root->GetHeuristic();
 	root->consequentMove = nullptr;
+	GenerateTree();
 }
 
 GameTree::~GameTree()
@@ -65,15 +67,47 @@ GameTree::~GameTree()
 
 void GameTree::GenerateTree()
 {
-	if (treeDepth == 0)
+	std::vector<Node*> currentDepthNodes = std::vector<Node*>();
+	currentDepthNodes.push_back(root);
+	int currentDepth = 0;
+	//Generate until max depth reached
+	while (currentDepth < MAX_DEPTH)
 	{
-		treeDepth++;
-		root->GenerateChildren();
+		//Generate children at current depth. Save them to nextDepth list
+		std::vector<Node*> nextDepthNodes = std::vector<Node*>();
+		for (Node* node : currentDepthNodes)
+		{
+			if (!node->generatedChildren)
+				node->GenerateChildren();
+			for (Node* child : node->children)
+			{
+				nextDepthNodes.push_back(child);
+			}
+		}
+		//Clear the current vector and replace with nextDepth
+		currentDepthNodes = nextDepthNodes;
+		currentDepth++;
 	}
-	while (treeDepth <= MAX_DEPTH)
+}
+
+void GameTree::UpdateTree(std::shared_ptr<Move> moveMade)
+{
+	//iterate children vector
+	std::vector<Node*>::iterator vecIterator = root->children.begin();
+	while (vecIterator != root->children.end())
 	{
-			
+		Node* child = *vecIterator;
+		//If the move made matches one of the children states, erase that child, and set it as the new root
+		if (moveMade->operator==(*child->consequentMove))
+		{
+			root->children.erase(vecIterator);
+			delete root;
+			root = child;
+			break;
+		}
+		vecIterator++;
 	}
+	GenerateTree();
 }
 
 

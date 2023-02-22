@@ -117,6 +117,7 @@ bool Game::move(int fromRow, int fromCol, int toRow, int toCol)
 		{
 			if (gameplay->move(status, board, valid[index]))
 			{
+				gameTree->UpdateTree(valid[index]);
 				log.push(valid[index]);
 				
 

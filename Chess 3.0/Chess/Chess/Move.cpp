@@ -41,5 +41,22 @@ MoveType Move::getType()
 
 bool Move::operator==(const Move& other)
 {
-	return (this->fromRow == other.fromRow) && (this->fromCol == other.fromCol) && (this->movePiece->getType() == other.movePiece->getType()) && (this->movePiece->getColor() == other.movePiece->getColor()) && (this->toRow == other.toRow) && (this->toCol == other.toCol) && (this->type == other.type) && (this->capturedPiece->getType() == other.capturedPiece->getType()) && (this->capturedPiece->getColor() == other.capturedPiece->getColor());
+	if( (this->fromRow == other.fromRow) && 
+		(this->fromCol == other.fromCol) && 
+		(this->movePiece->getType() == other.movePiece->getType()) && 
+		(this->movePiece->getColor() == other.movePiece->getColor()) && 
+		(this->toRow == other.toRow) && (this->toCol == other.toCol) &&
+		(this->type == other.type))
+		{
+			if (this->capturedPiece != nullptr && other.capturedPiece != nullptr)
+			{
+				if (this->capturedPiece->getType() == other.capturedPiece->getType() && this->capturedPiece->getColor() == other.capturedPiece->getColor())
+					return true;
+			}
+			else if (this->capturedPiece == nullptr && other.capturedPiece == nullptr)
+			{
+				return true;
+			}
+		}
+	return false;
 }
