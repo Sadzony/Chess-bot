@@ -1,34 +1,38 @@
 #pragma once
-#define LOOKAHEAD_MAX 5;
+#define MAX_DEPTH 2
 #include "Chess/Board.h"
 #include "Chess/GameStatus.h"
 #include "Chess/Move.h"
 #include <memory>
 #include <utility>
 
-typedef std::pair<Board*, GameStatus*> Outcome;
+static PieceColor GetTurnColor(int p_turn);
 
 struct Node
 {
+	~Node();
+	void GenerateChildren();
 	int turn;
+	int heuristic;
 	Board* currentBoard;
 	GameStatus* currentStatus;
-	int heuristic;
 	std::shared_ptr<Move> consequentMove;
-	std::vector<Outcome> possibleOutcomes;
-	void CleanUp();
+	std::vector<Node*> children;
+	bool generatedChildren = false;
 };
 
 class GameTree
 {
 public:
 	GameTree(Board* p_root, GameStatus* p_status);
+	~GameTree();
+	void GenerateTree();
 	void UpdateTree(std::shared_ptr<Move> moveMade);
 private:
-	void GenerateNode(Node parent);
-	void FindPossibleOutcomes(Node target, std::vector<Outcome>& output);
-	PieceColor GetTurnColor(int p_turn);
-	Node root;
+	Node* root;
+	int treeDepth;
 };
+
+
 
 
