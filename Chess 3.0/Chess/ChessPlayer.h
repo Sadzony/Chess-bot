@@ -5,6 +5,8 @@
 #include <memory>
 #include "Chess/Move.h"
 
+#define MAX_DEPTH 3
+
 using namespace std;
 
 class Piece;
@@ -13,7 +15,6 @@ class GameStatus;
 class Gameplay;
 class Move;
 
-class GameTree;
 
 typedef vector<PieceInPosition> vecPieces;
 
@@ -27,10 +28,12 @@ public:
 	bool			isAI() { return m_bAI; }
 	unsigned int	getAllLivePieces(vecPieces& vpieces);
 	vector<std::shared_ptr<Move>>	getValidMovesForPiece(PieceInPosition pip);
-	bool			chooseAIMove(std::shared_ptr<Move>* moveToMake, GameTree* gameTree);
+	bool			chooseAIMove(std::shared_ptr<Move>* moveToMake);
+	int				minimax(Board* board, GameStatus* status, int depth);
 
 protected:
 	PieceColor		getColour() { return m_colour; }
+
 
 private:
 	PieceColor	m_colour;

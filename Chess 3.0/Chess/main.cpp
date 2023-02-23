@@ -547,7 +547,7 @@ void newAITurn()
 
 	// decide and make the move
 	std::shared_ptr<Move> move;
-	bool moveMade = player->chooseAIMove(&move, chess->getGameTree());
+	bool moveMade = player->chooseAIMove(&move);
 	if (!moveMade)
 	{
 		return; // TODO: if this is the case - what next? The chess engine should have detected a checkmate prior to this. 

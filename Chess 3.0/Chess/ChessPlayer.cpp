@@ -3,7 +3,6 @@
 #include "Chess\Gameplay.h"
 #include "Chess\Board.h"
 #include "Chess\Piece.h"
-#include "GameTree.h"
 
 using namespace std;
 
@@ -64,31 +63,47 @@ vector<std::shared_ptr<Move>> ChessPlayer::getValidMovesForPiece(PieceInPosition
 
 // chooseAIMove
 // in this method - for an AI chess player - choose a move to make. This is called once per play. 
-bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>* moveToMake, GameTree* gameTree)
+bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>* moveToMake)
 {
+	//Get all pieces of the player
 	vecPieces vPieces;
-	unsigned int piecesAvailable = getAllLivePieces(vPieces);
- 	int heuristic = m_pBoard->GetHeuristic();
-	// BAD AI !! - for the first piece which can move, choose the first available move
-	bool moveAvailable = false;
-	int randomPiece;
-	while (!moveAvailable)
-	{
-		randomPiece = rand() % vPieces.size(); // choose a random chess piece
-		vector<std::shared_ptr<Move>> moves = getValidMovesForPiece(vPieces[randomPiece]); // get all the valid moves for this piece if any)
-		if (moves.size() > 0) // if there is a valid move exit this loop - we have a candidate 
-			moveAvailable = true;
-	}
+	unsigned int pieceCount = getAllLivePieces(vPieces);
 
-	// get all moves for the random piece chosen (yes there is some duplication here...)
-	vector<std::shared_ptr<Move>> moves = getValidMovesForPiece(vPieces[randomPiece]);
-	if (moves.size() > 0)
+	//Find the possible moves of every piece and try to find the best move
+	shared_ptr<Move> bestMove = nullptr;
+	int bestMoveValue;
+	if (m_colour == PieceColor::BLACK)
+		bestMoveValue = std::numeric_limits<int>::max();
+	else
+		bestMoveValue = std::numeric_limits<int>::min();
+
+	for (PieceInPosition pip : vPieces)
 	{
-		int field = moves.size();
-		int randomMove = rand() % field; // for all the possible moves for that piece, choose a random one
-		*moveToMake = moves[randomMove]; // store it in 'moveToMake' and return
-		return true;
+		vector<shared_ptr<Move>> pieceMoves = getValidMovesForPiece(pip); // get all the valid moves for this piece
+		for (shared_ptr<Move> move : pieceMoves)
+		{
+			//Generate a board state from this move
+
+
+			//If the move is better than current best, set it as best move.
+			int moveValue = minimax(m_pBoard, m_pGameStatus, 0);
+			if (m_colour == PieceColor::BLACK && moveValue < bestMoveValue)
+			{
+				bestMoveValue = moveValue;
+				bestMove = move;
+			}
+			else if (m_colour == PieceColor::WHITE && moveValue > bestMoveValue)
+			{
+				bestMoveValue = moveValue;
+				bestMove = move;
+			}
+		}
 	}
 
 	return false; // if there are no moves to make return false
+}
+
+int ChessPlayer::minimax(Board* board, GameStatus* status, int depth)
+{
+	return 0;
 }

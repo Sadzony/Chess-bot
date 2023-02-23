@@ -1,6 +1,5 @@
 #include "Game.h"
 #include "..\ChessPlayer.h"
-#include "..\GameTree.h"
 
 
 Game::Game()
@@ -13,8 +12,6 @@ Game::Game()
 	turn = 1;
 
 	ChessPlayer::setupPlayers(&m_PlayerWhite, &m_PlayerBlack ,board, status, gameplay);
-
-	gameTree = new GameTree(board, status);
 
 	int x = 1;
 }
@@ -117,7 +114,6 @@ bool Game::move(int fromRow, int fromCol, int toRow, int toCol)
 		{
 			if (gameplay->move(status, board, valid[index]))
 			{
-				gameTree->UpdateTree(valid[index]);
 				log.push(valid[index]);
 				
 

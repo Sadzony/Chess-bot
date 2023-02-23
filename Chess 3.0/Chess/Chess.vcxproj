@@ -174,7 +174,6 @@
     <ClCompile Include="Chess\Move.cpp" />
     <ClCompile Include="Chess\Piece.cpp" />
     <ClCompile Include="Chess\Square.cpp" />
-    <ClCompile Include="GameTree.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="stb_image.cpp.cpp" />
@@ -191,7 +190,6 @@
     <ClInclude Include="Chess\PieceColor.h" />
     <ClInclude Include="Chess\PieceType.h" />
     <ClInclude Include="Chess\Square.h" />
-    <ClInclude Include="GameTree.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="stb_image.h" />
   </ItemGroup>
