@@ -3,28 +3,30 @@
 #include "Chess\Gameplay.h"
 #include "Chess\Board.h"
 #include "Chess\Piece.h"
+#include "Chess/Game.h"
 
 using namespace std;
 
 
 
-void ChessPlayer::setupPlayers(ChessPlayer** playerWhite, ChessPlayer** playerBlack, Board* pBoard, GameStatus* pGameStatus, Gameplay* pGamePlay)
+void ChessPlayer::setupPlayers(ChessPlayer** playerWhite, ChessPlayer** playerBlack, Board* pBoard, GameStatus* pGameStatus, Gameplay* pGamePlay, Game* p_game)
 {
-	*playerBlack = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::BLACK);
-	//(*playerBlack)->setAI();
+	*playerBlack = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::BLACK, p_game);
+	(*playerBlack)->setAI();
 
-	*playerWhite = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::WHITE);
+	*playerWhite = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::WHITE, p_game);
 	(*playerWhite)->setAI();
 
 }
 
-ChessPlayer::ChessPlayer(Board* pBoard, GameStatus* pGameStatus, Gameplay* pGamePlay, PieceColor colour)
+ChessPlayer::ChessPlayer(Board* pBoard, GameStatus* pGameStatus, Gameplay* pGamePlay, PieceColor colour, Game* p_game)
 {
 	m_colour = colour;
 	m_pBoard = pBoard;
 	m_pGameStatus = pGameStatus;
 	m_pGamePlay = pGamePlay;
 	m_bAI = false;
+	m_chess = p_game;
 }
 
 unsigned int ChessPlayer::getAllLivePieces(vecPieces& vpieces)
@@ -63,47 +65,127 @@ vector<std::shared_ptr<Move>> ChessPlayer::getValidMovesForPiece(PieceInPosition
 
 // chooseAIMove
 // in this method - for an AI chess player - choose a move to make. This is called once per play. 
-bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>* moveToMake)
+bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 {
 	//Get all pieces of the player
 	vecPieces vPieces;
 	unsigned int pieceCount = getAllLivePieces(vPieces);
 
 	//Find the possible moves of every piece and try to find the best move
-	shared_ptr<Move> bestMove = nullptr;
 	int bestMoveValue;
 	if (m_colour == PieceColor::BLACK)
 		bestMoveValue = std::numeric_limits<int>::max();
 	else
 		bestMoveValue = std::numeric_limits<int>::min();
-
+	//Run minimax on all the valid moves for all pieces of this player
 	for (PieceInPosition pip : vPieces)
 	{
-		vector<shared_ptr<Move>> pieceMoves = getValidMovesForPiece(pip); // get all the valid moves for this piece
+		vector<shared_ptr<Move>> pieceMoves = getValidMovesForPiece(pip); 
 		for (shared_ptr<Move> move : pieceMoves)
 		{
 			//Generate a board state from this move
+			Board* nextBoard;
+			GameStatus* nextStatus;
+			PieceColor opposingColor = (m_colour == PieceColor::WHITE) ? PieceColor::BLACK : PieceColor::WHITE;
+			GenerateNextTurn(opposingColor, nextBoard, nextStatus, m_pBoard, m_pGameStatus, move);
 
+			//The minimax function starts from next turn, so the opposite color is needed.
+			
+
+			//Find the value of this move by finding the future possibilities using minimax
+			int moveValue = minimax(nextBoard, nextStatus, 1, opposingColor);
 
 			//If the move is better than current best, set it as best move.
-			int moveValue = minimax(m_pBoard, m_pGameStatus, 0);
 			if (m_colour == PieceColor::BLACK && moveValue < bestMoveValue)
 			{
 				bestMoveValue = moveValue;
-				bestMove = move;
+				moveToMake = move;
 			}
 			else if (m_colour == PieceColor::WHITE && moveValue > bestMoveValue)
 			{
 				bestMoveValue = moveValue;
-				bestMove = move;
+				moveToMake = move;
 			}
 		}
 	}
+	if (moveToMake != nullptr)
+	{
+		return true;
+	}
+
 
 	return false; // if there are no moves to make return false
 }
 
-int ChessPlayer::minimax(Board* board, GameStatus* status, int depth)
+int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor currentPlayerColor)
 {
-	return 0;
+	//Evaluate the heuristic of the board
+	int heuristic = board->GetHeuristic();
+	//If the player has won the game on this turn, return the heuristic and don't minimax further. Also happens if max depth is reached.
+	if (Gameplay::isCheckMateState(status, board, currentPlayerColor) || depth >= MAX_DEPTH)
+	{
+		return heuristic;
+	}
+	//Get all pieces of the player
+	vecPieces vPieces;
+	if (currentPlayerColor == PieceColor::WHITE)
+		m_chess->getWhitePlayer()->getAllLivePieces(vPieces);
+	else
+		m_chess->getBlackPlayer()->getAllLivePieces(vPieces);
+
+	//Get all possible moves
+	std::vector<shared_ptr<Move>> possibleMoves = std::vector<shared_ptr<Move>>();
+	for (PieceInPosition pip : vPieces)
+	{
+		vector<shared_ptr<Move>> pieceMoves = getValidMovesForPiece(pip);
+		for (shared_ptr<Move> move : pieceMoves)
+			possibleMoves.push_back(move);
+	}
+	//If there are no possible moves and check mate wasn't reached, then it is a tie and heuristic is 0.
+	if (possibleMoves.size() == 0)
+		return 0;
+	
+	PieceColor opposingColor = (m_colour == PieceColor::WHITE) ? PieceColor::BLACK : PieceColor::WHITE;
+	//Maximizer
+	if (currentPlayerColor == PieceColor::WHITE) 
+	{
+		//Evaluate possible moves, set the bestMoveValue to -INFINITY
+		int bestMoveValue; bestMoveValue = std::numeric_limits<int>::min();
+		for (shared_ptr<Move> move : possibleMoves)
+		{
+			//Generate next board state
+			Board* nextBoard;
+			GameStatus* nextStatus;
+			GenerateNextTurn(opposingColor, nextBoard, nextStatus, board, status, move);
+			//Run minimax on this board state
+			bestMoveValue = max(bestMoveValue, minimax(nextBoard, nextStatus, depth + 1, opposingColor));
+		}
+		return bestMoveValue;
+
+	}
+	//Minimizer
+	else 
+	{
+		//Evaluate possible moves, set the bestMoveValue to INFINITY
+		int bestMoveValue; bestMoveValue = std::numeric_limits<int>::max();
+		for (shared_ptr<Move> move : possibleMoves)
+		{
+			//Generate next board state
+			Board* nextBoard;
+			GameStatus* nextStatus;
+			GenerateNextTurn(opposingColor, nextBoard, nextStatus, board, status, move);
+			//Run minimax on this board state
+			bestMoveValue = min(bestMoveValue, minimax(nextBoard, nextStatus, depth + 1, opposingColor));
+		}
+		return bestMoveValue;
+	}
+}
+
+void ChessPlayer::GenerateNextTurn(PieceColor opposingPlayerColor, Board*& outBoard, GameStatus*& outStatus, Board* currentBoard, GameStatus* currentStatus, shared_ptr<Move> moveToMake)
+{
+	outBoard = new Board(*currentBoard);
+	outStatus = new GameStatus(*currentStatus);
+	Gameplay::move(outStatus, outBoard, moveToMake);
+	//Reset EnPassantable status, like at the end of turn.
+	outStatus->setPieceEnPassantable(opposingPlayerColor, NULL);
 }

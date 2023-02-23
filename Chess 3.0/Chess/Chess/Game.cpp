@@ -11,7 +11,7 @@ Game::Game()
 	setInitialPieces(PieceColor::BLACK);
 	turn = 1;
 
-	ChessPlayer::setupPlayers(&m_PlayerWhite, &m_PlayerBlack ,board, status, gameplay);
+	ChessPlayer::setupPlayers(&m_PlayerWhite, &m_PlayerBlack ,board, status, gameplay, this);
 
 	int x = 1;
 }
