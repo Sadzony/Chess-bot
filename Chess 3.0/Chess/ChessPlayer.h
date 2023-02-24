@@ -5,7 +5,7 @@
 #include <memory>
 #include "Chess/Move.h"
 
-#define MAX_DEPTH 2
+#define MAX_DEPTH 3
 
 using namespace std;
 
@@ -33,7 +33,7 @@ public:
 
 protected:
 	PieceColor		getColour() { return m_colour; }
-	int				minimax(Board* board, GameStatus* status, int depth, PieceColor currentPlayerColor);
+	int				minimax(Board* board, GameStatus* status, int depth, PieceColor currentPlayerColor, int alpha, int beta);
 	void GenerateNextTurn(PieceColor currentPlayerColor, Board*& outBoard, GameStatus*& outStatus, Board* currentBoard, GameStatus* currentStatus, shared_ptr<Move> moveToMake);
 
 

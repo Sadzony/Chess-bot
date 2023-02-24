@@ -12,7 +12,7 @@ using namespace std;
 void ChessPlayer::setupPlayers(ChessPlayer** playerWhite, ChessPlayer** playerBlack, Board* pBoard, GameStatus* pGameStatus, Gameplay* pGamePlay, Game* p_game)
 {
 	*playerBlack = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::BLACK, p_game);
-	(*playerBlack)->setAI();
+	//(*playerBlack)->setAI();
 
 	*playerWhite = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::WHITE, p_game);
 	(*playerWhite)->setAI();
@@ -77,7 +77,9 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 		bestMoveValue = std::numeric_limits<int>::max();
 	else
 		bestMoveValue = std::numeric_limits<int>::min();
-	//Run minimax on all the valid moves for all pieces of this player
+	//Run minimax on all the valid moves for all pieces of this player. The first pass of the function is done here, as the move needs to be output
+	int alpha; alpha = std::numeric_limits<int>::min();
+	int beta; beta = std::numeric_limits<int>::max();
 	for (PieceInPosition pip : vPieces)
 	{
 		vector<shared_ptr<Move>> pieceMoves = getValidMovesForPiece(pip); 
@@ -86,25 +88,40 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 			//Generate a board state from this move
 			Board* nextBoard;
 			GameStatus* nextStatus;
+			//The minimax function starts from next turn, so the opposite color is needed.
 			PieceColor opposingColor = (m_colour == PieceColor::WHITE) ? PieceColor::BLACK : PieceColor::WHITE;
 			GenerateNextTurn(opposingColor, nextBoard, nextStatus, m_pBoard, m_pGameStatus, move);
 
-			//The minimax function starts from next turn, so the opposite color is needed.
-			
-
 			//Find the value of this move by finding the future possibilities using minimax
-			int moveValue = minimax(nextBoard, nextStatus, 1, opposingColor);
+			int moveValue = minimax(nextBoard, nextStatus, 1, opposingColor, alpha, beta);
 
 			//If the move is better than current best, set it as best move.
-			if (m_colour == PieceColor::BLACK && moveValue < bestMoveValue)
+			if (m_colour == PieceColor::BLACK)
 			{
-				bestMoveValue = moveValue;
-				moveToMake = move;
+				if (moveValue < bestMoveValue)
+				{
+					bestMoveValue = moveValue;
+					moveToMake = move;
+				}
+				//Find the value of beta, which is the best value that the black player can take
+				beta = min(beta, bestMoveValue);
+				//If beta (best of black) is smaller than alpha (best of white) the loop can exit early.
+				if (beta <= alpha)
+					break;
 			}
-			else if (m_colour == PieceColor::WHITE && moveValue > bestMoveValue)
+			else if (m_colour == PieceColor::WHITE)
 			{
-				bestMoveValue = moveValue;
-				moveToMake = move;
+				if (moveValue > bestMoveValue)
+				{
+					bestMoveValue = moveValue;
+					moveToMake = move;
+				}
+				//Find the value of alpha, which is the best value that the white player can take
+				alpha = max(alpha, bestMoveValue);
+				//If alpha (best of white) is bigger than beta (best of black), the loop can be exit early
+				if (alpha >= beta)
+					break;
+					
 			}
 		}
 	}
@@ -117,7 +134,7 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 	return false; // if there are no moves to make return false
 }
 
-int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor currentPlayerColor)
+int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor currentPlayerColor, int alpha, int beta)
 {
 	//Evaluate the heuristic of the board
 	int heuristic = board->GetHeuristic();
@@ -158,7 +175,12 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 			GameStatus* nextStatus;
 			GenerateNextTurn(opposingColor, nextBoard, nextStatus, board, status, move);
 			//Run minimax on this board state
-			bestMoveValue = max(bestMoveValue, minimax(nextBoard, nextStatus, depth + 1, opposingColor));
+			bestMoveValue = max(bestMoveValue, minimax(nextBoard, nextStatus, depth + 1, opposingColor, alpha, beta));
+			//Find the value of alpha, which is the best value that the white player can take
+			alpha = max(alpha, bestMoveValue);
+			//If beta (best of black player) is smaller than alpha, the loop can be exit early
+			if (beta <= alpha)
+				break;
 		}
 		return bestMoveValue;
 
@@ -175,7 +197,11 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 			GameStatus* nextStatus;
 			GenerateNextTurn(opposingColor, nextBoard, nextStatus, board, status, move);
 			//Run minimax on this board state
-			bestMoveValue = min(bestMoveValue, minimax(nextBoard, nextStatus, depth + 1, opposingColor));
+			bestMoveValue = min(bestMoveValue, minimax(nextBoard, nextStatus, depth + 1, opposingColor, alpha, beta));
+			//Find the value of beta, which is the best value that the black player can take
+			beta = min(beta, bestMoveValue);
+			if (beta <= alpha)
+				break;
 		}
 		return bestMoveValue;
 	}
