@@ -162,7 +162,7 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 	if (possibleMoves.size() == 0)
 		return 0;
 	
-	PieceColor opposingColor = (m_colour == PieceColor::WHITE) ? PieceColor::BLACK : PieceColor::WHITE;
+	PieceColor opposingColor = (currentPlayerColor == PieceColor::WHITE) ? PieceColor::BLACK : PieceColor::WHITE;
 	//Maximizer
 	if (currentPlayerColor == PieceColor::WHITE) 
 	{
