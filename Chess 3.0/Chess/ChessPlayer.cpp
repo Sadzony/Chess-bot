@@ -139,7 +139,13 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor currentPlayerColor, int alpha, int beta)
 {
 	//If the player has won the game on this turn, return the heuristic and don't minimax further. Also happens if max depth is reached.
-	if (depth >= MAX_DEPTH || Gameplay::isCheckMateState(status, board, PieceColor::BLACK) || Gameplay::isCheckMateState(status, board, PieceColor::WHITE))
+	if (depth >= MAX_DEPTH)
+	{
+		//Evaluate the heuristic of the board
+		int heuristic = board->GetHeuristic();
+		return heuristic;
+	}
+	else if (Gameplay::isCheckMateState(status, board, PieceColor::BLACK) || Gameplay::isCheckMateState(status, board, PieceColor::WHITE))
 	{
 		//Evaluate the heuristic of the board
 		int heuristic = board->GetHeuristic();
