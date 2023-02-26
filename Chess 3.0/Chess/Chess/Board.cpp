@@ -53,23 +53,23 @@ int Board::GetHeuristic()
 			{
 				std::shared_ptr<Piece> pieceOnSquare = squares[row][col].getOccupyingPiece();
 
-				float multiplier = 1.0f;
-				if (pieceOnSquare.get()->getType() != PieceType::KING)
-				{
-					//calculate multiplier based on how far the piece is from the start
-					if (pieceOnSquare.get()->getColor() == PieceColor::WHITE)
-						multiplier += (0.1f * row);
-					else
-						multiplier += (((MAX_ROW_INDEX - 1) - row) * 0.1f);
-				}
+				//float multiplier = 1.0f;
+				//if (pieceOnSquare.get()->getType() != PieceType::KING)
+				//{
+				//	//calculate multiplier based on how far the piece is from the start
+				//	if (pieceOnSquare.get()->getColor() == PieceColor::WHITE)
+				//		multiplier += (0.1f * row);
+				//	else
+				//		multiplier += (((MAX_ROW_INDEX - 1) - row) * 0.1f);
+				//}
 
 				// white piece gives a positive to heuristic
 				if (pieceOnSquare.get()->getColor() == PieceColor::WHITE)
-					heuristic += (int)((int)pieceOnSquare.get()->getType() * multiplier);
+					heuristic += (int)((int)pieceOnSquare.get()->getType());
 
 				//black piece gives a negative to heuristic
 				else if (pieceOnSquare.get()->getColor() == PieceColor::BLACK)
-					heuristic -= (int)((int)pieceOnSquare.get()->getType() * multiplier);
+					heuristic -= (int)((int)pieceOnSquare.get()->getType());
 			}
 		}
 	}

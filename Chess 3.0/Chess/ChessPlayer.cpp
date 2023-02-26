@@ -12,7 +12,7 @@ using namespace std;
 void ChessPlayer::setupPlayers(ChessPlayer** playerWhite, ChessPlayer** playerBlack, Board* pBoard, GameStatus* pGameStatus, Gameplay* pGamePlay, Game* p_game)
 {
 	*playerBlack = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::BLACK, p_game);
-	//(*playerBlack)->setAI();
+	(*playerBlack)->setAI();
 
 	*playerWhite = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::WHITE, p_game);
 	(*playerWhite)->setAI();
@@ -94,6 +94,8 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 
 			//Find the value of this move by finding the future possibilities using minimax
 			int moveValue = minimax(nextBoard, nextStatus, 1, opposingColor, alpha, beta);
+			delete nextBoard;
+			delete nextStatus;
 
 			//If the move is better than current best, set it as best move.
 			if (m_colour == PieceColor::BLACK)
@@ -136,11 +138,11 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 
 int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor currentPlayerColor, int alpha, int beta)
 {
-	//Evaluate the heuristic of the board
-	int heuristic = board->GetHeuristic();
 	//If the player has won the game on this turn, return the heuristic and don't minimax further. Also happens if max depth is reached.
-	if (Gameplay::isCheckMateState(status, board, currentPlayerColor) || depth >= MAX_DEPTH)
+	if (depth >= MAX_DEPTH || Gameplay::isCheckMateState(status, board, PieceColor::BLACK) || Gameplay::isCheckMateState(status, board, PieceColor::WHITE))
 	{
+		//Evaluate the heuristic of the board
+		int heuristic = board->GetHeuristic();
 		return heuristic;
 	}
 	//Get all pieces of the player
@@ -176,6 +178,8 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 			GenerateNextTurn(opposingColor, nextBoard, nextStatus, board, status, move);
 			//Run minimax on this board state
 			bestMoveValue = max(bestMoveValue, minimax(nextBoard, nextStatus, depth + 1, opposingColor, alpha, beta));
+			delete nextBoard;
+			delete nextStatus;
 			//Find the value of alpha, which is the best value that the white player can take
 			alpha = max(alpha, bestMoveValue);
 			//If beta (best of black player) is smaller than alpha, the loop can be exit early
@@ -198,6 +202,8 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 			GenerateNextTurn(opposingColor, nextBoard, nextStatus, board, status, move);
 			//Run minimax on this board state
 			bestMoveValue = min(bestMoveValue, minimax(nextBoard, nextStatus, depth + 1, opposingColor, alpha, beta));
+			delete nextBoard;
+			delete nextStatus;
 			//Find the value of beta, which is the best value that the black player can take
 			beta = min(beta, bestMoveValue);
 			if (beta <= alpha)
