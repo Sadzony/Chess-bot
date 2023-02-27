@@ -736,7 +736,19 @@ void keyFunction(unsigned char key, int x, int y)
                         {
                             needPromote = true;
                         }
-                        if (needPromote) break;
+                        if (needPromote)
+                        {
+                            PieceColor colour = chess->getTurnColor();
+                            ChessPlayer* player = nullptr;
+                            if (colour == PieceColor::BLACK) {
+                                player = chess->getBlackPlayer();
+                            }
+                            else {
+                                player = chess->getWhitePlayer();
+                            }
+                            if (!player->isAI()) break;
+                            else if (player->isAI()) keyFunction('Q', moveToRow, moveToCol);
+                        }
                         endOfTurn();
                     }
                     selected = false;

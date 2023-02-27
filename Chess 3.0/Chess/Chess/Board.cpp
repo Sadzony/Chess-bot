@@ -1,4 +1,5 @@
 #include "Board.h"
+#include "Gameplay.h"
 
 Board::Board()
 {
@@ -45,6 +46,7 @@ Board* Board::hardCopy()
 int Board::GetHeuristic()
 {
 	int heuristic = 0;
+	Board* evaluationBoard = new Board(*this);
 	//iterate every square
 	for (int row = MIN_ROW_INDEX; row < MAX_ROW_INDEX; row++) {
 		for (int col = MIN_COL_INDEX; col < MAX_COL_INDEX; col++) {
@@ -52,17 +54,40 @@ int Board::GetHeuristic()
 			if (squares[row][col].hasOccupyingPiece())
 			{
 				std::shared_ptr<Piece> pieceOnSquare = squares[row][col].getOccupyingPiece();
-
+				PieceType type = pieceOnSquare.get()->getType();
 				float multiplier = 1.0f;
-				if (pieceOnSquare.get()->getType() != PieceType::KING)
+				if (type != PieceType::KING)
 				{
 					//calculate multiplier based on how far the piece is from the start
 					if (pieceOnSquare.get()->getColor() == PieceColor::WHITE)
-						multiplier += (0.1f * row);
-					else
-						multiplier += (((MAX_ROW_INDEX - 1) - row) * 0.1f);
-				}
+					{
+						multiplier += (0.15f * row);
+						//Promotion check
+						if (type == PieceType::PAWN && row == (MAX_ROW_INDEX - 1))
+						{
+							Gameplay::pawnPromotion(evaluationBoard, row, col, PieceType::QUEEN);
+						}
 
+					}
+						
+					else 
+					{
+						multiplier += (((MAX_ROW_INDEX - 1) - row) * 0.15f);
+						if (type == PieceType::PAWN && row == 0)
+						{
+							Gameplay::pawnPromotion(evaluationBoard, row, col, PieceType::QUEEN);
+						}
+					}
+						
+				}
+				else
+				{
+					if (pieceOnSquare.get()->getColor() == PieceColor::WHITE)
+						multiplier += 0.05 * row;
+					else
+						multiplier += (((MAX_ROW_INDEX - 1) - row) * 0.05);
+				}
+				pieceOnSquare = evaluationBoard->squares[row][col].getOccupyingPiece();
 				// white piece gives a positive to heuristic
 				if (pieceOnSquare.get()->getColor() == PieceColor::WHITE)
 					heuristic += (int)((int)pieceOnSquare.get()->getType());
