@@ -43,8 +43,9 @@ Board* Board::hardCopy()
 
 	return pBoard;
 }
-int Board::GetHeuristic()
+int Board::GetHeuristic(GameStatus* p_status)
 {
+	GameStatus* thisStatus = new GameStatus(*p_status);
 	int heuristic = 0;
 	Board* evaluationBoard = new Board(*this);
 	//iterate every square
@@ -55,49 +56,90 @@ int Board::GetHeuristic()
 			{
 				std::shared_ptr<Piece> pieceOnSquare = squares[row][col].getOccupyingPiece();
 				PieceType type = pieceOnSquare.get()->getType();
-				float multiplier = 1.0f;
-				if (type != PieceType::KING)
+				PieceColor color = pieceOnSquare.get()->getColor();
+				//Multiplier is found by calculating the mobility and move value
+				int mobilityValue = 0; 
+				//Space value is taken from piece-square tables and helpful pawn positions
+				int spaceValue = 0;
+				//PAWNS
+				if (type == PieceType::PAWN)
 				{
-					//calculate multiplier based on how far the piece is from the start
-					if (pieceOnSquare.get()->getColor() == PieceColor::WHITE)
+					//White
+					if (color == PieceColor::WHITE)
 					{
-						multiplier += (0.15f * row);
 						//Promotion check
-						if (type == PieceType::PAWN && row == (MAX_ROW_INDEX - 1))
-						{
+						if(row == (MAX_ROW_INDEX - 1))
+							//The bot always goes for queen
 							Gameplay::pawnPromotion(evaluationBoard, row, col, PieceType::QUEEN);
-						}
-
-					}
+							pieceOnSquare = evaluationBoard->squares[row][col].getOccupyingPiece();
+							type = pieceOnSquare.get()->getType();
 						
-					else 
+					}
+					//Black
+					else if(color == PieceColor::BLACK)
 					{
-						multiplier += (((MAX_ROW_INDEX - 1) - row) * 0.15f);
-						if (type == PieceType::PAWN && row == 0)
-						{
+						//Promotion check
+						if (row == 0) {
+							//The bot always goes for queen
 							Gameplay::pawnPromotion(evaluationBoard, row, col, PieceType::QUEEN);
+							pieceOnSquare = evaluationBoard->squares[row][col].getOccupyingPiece();
+							type = pieceOnSquare.get()->getType();
 						}
 					}
-						
 				}
-				else
+
+				//Mobility check
+				//Get all possible moves
+				std::vector<std::shared_ptr<Move>> pieceMoves = Gameplay::getValidMoves(thisStatus, evaluationBoard, pieceOnSquare, row, col);
+				for (std::shared_ptr<Move> move : pieceMoves)
 				{
-					if (pieceOnSquare.get()->getColor() == PieceColor::WHITE)
-						multiplier += 0.05 * row;
-					else
-						multiplier += (((MAX_ROW_INDEX - 1) - row) * 0.05);
+					Move* nextMove = move.get();
+					//Give a multiplier bonus for each move available (mobility bonus). Only applies to forward mobility
+					if ((color == PieceColor::WHITE && nextMove->getDestinationPosition().first > nextMove->getOriginPosition().first)
+						|| (color == PieceColor::BLACK && nextMove->getDestinationPosition().first < nextMove->getOriginPosition().first))
+					{
+						switch (type)
+						{
+						case(PieceType::PAWN):
+							mobilityValue += 10;
+						case(PieceType::ROOK):
+							mobilityValue += 3;
+						case(PieceType::KNIGHT):
+							mobilityValue += 50;
+						case(PieceType::BISHOP):
+							mobilityValue += 7;
+						case(PieceType::QUEEN):
+							mobilityValue += 2;
+						}
+					}
+
+					//give additional bonus for special move types
+					//MoveType moveType = move.get()->getType();
+					//if (moveType == MoveType::CAPTURE)
+					//	mobilityValue += 15;
+					//else if (moveType == MoveType::EN_PASSANT)
+					//	mobilityValue += 10;
+					//else if (moveType == MoveType::CASTLING)
+					//	mobilityValue += 100;
 				}
-				pieceOnSquare = evaluationBoard->squares[row][col].getOccupyingPiece();
+				
+				//Value is sum of values
+				int value = (int)type + spaceValue + mobilityValue;
+
+				//Evaluation of points
+				
 				// white piece gives a positive to heuristic
-				if (pieceOnSquare.get()->getColor() == PieceColor::WHITE)
-					heuristic += (int)((int)pieceOnSquare.get()->getType());
+				if (color == PieceColor::WHITE)
+					heuristic += value;
 
 				//black piece gives a negative to heuristic
-				else if (pieceOnSquare.get()->getColor() == PieceColor::BLACK)
-					heuristic -= (int)((int)pieceOnSquare.get()->getType());
+				else if (color == PieceColor::BLACK)
+					heuristic -= value;
 			}
 		}
 	}
+	delete evaluationBoard;
+	delete thisStatus;
 	return heuristic;
 }
 

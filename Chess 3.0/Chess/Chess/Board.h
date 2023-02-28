@@ -9,7 +9,13 @@ it contains Square objects (which contain a piece, or is empty).
 #include "Square.h"
 #include <memory>
 #include <vector>
+#include <utility>
+
+
+class GameStatus;
 typedef std::vector<PieceInPosition> vecPieces;
+typedef std::pair<PieceColor, PieceInPosition> PieceCharacteristics;
+
 class Board
 {
 public:
@@ -17,7 +23,7 @@ public:
 		static const int HEIGHT = 8;
 
 	private:
-
+		//static const std::map<PieceCharacteristics, std::array<std::array<int, WIDTH>, HEIGHT>> pieceSquareTables;
 		Square squares[WIDTH][HEIGHT];
 	public:
 		static const int MIN_COL_INDEX = 0;
@@ -31,7 +37,7 @@ public:
 		Square* getSquare(int row, int col);
 
 		Board* hardCopy();
-		int GetHeuristic();
+		int GetHeuristic(GameStatus* p_status);
 		vecPieces GetLivePieces(PieceColor playerColor);
 		
 };

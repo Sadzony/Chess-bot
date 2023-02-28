@@ -142,29 +142,31 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 	if (depth >= MAX_DEPTH)
 	{
 		//Evaluate the heuristic of the board
-		int heuristic = board->GetHeuristic();
+		int heuristic = board->GetHeuristic(status);
 		return heuristic;
 	}
 	else if (Gameplay::isCheckMateState(status, board, PieceColor::WHITE))
 	{
-		int heuristic = board->GetHeuristic();
+		int heuristic = board->GetHeuristic(status);
 		//CheckMateState checks for valid moves. To find if there's a winner, find check state too.
 		if (Gameplay::isCheckState(status, board, PieceColor::WHITE))
 		{
 			heuristic -= (int)PieceType::KING;
 		}
 		else
+		//Stalemate
 			return 0;
 		return heuristic;
 	}
 	else if (Gameplay::isCheckMateState(status, board, PieceColor::BLACK))
 	{
-		int heuristic = board->GetHeuristic();
+		int heuristic = board->GetHeuristic(status);
 		//CheckMateState checks for valid moves. To find if there's a winner, find check state too.
 		if (Gameplay::isCheckState(status, board, PieceColor::BLACK))
 		{
 			heuristic += (int)PieceType::KING;
 		}
+		//Stalemate
 		else
 			return 0;
 		return heuristic;
