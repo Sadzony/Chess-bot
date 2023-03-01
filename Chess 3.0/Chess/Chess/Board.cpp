@@ -55,7 +55,7 @@ int Board::GetHeuristic(GameStatus* p_status)
 	valuedPieceList whitePieces = valuedPieceList();
 	valuedPieceList blackPieces = valuedPieceList();
 	
-	int attackTable[WIDTH][HEIGHT];
+	int attackTable[WIDTH][HEIGHT] = {};
 	//iterate every square
 	for (int row = MIN_ROW_INDEX; row < MAX_ROW_INDEX; row++) {
 		for (int col = MIN_COL_INDEX; col < MAX_COL_INDEX; col++) {
@@ -73,47 +73,47 @@ int Board::GetHeuristic(GameStatus* p_status)
 					blackPieces.push_back(pip);
 
 				//Generate space bonus from piece square table
-				//pip.value += pieceSquareTables[std::make_pair(color, type)].at(col).at(row);
+				pip.value += pieceSquareTables[std::make_pair(color, type)].at(col).at(row);
 
 				//Get all available moves for this piece
 				std::vector<std::shared_ptr<Move>> pieceMoves = Gameplay::getValidMoves(p_status, this, pieceOnSquare, row, col);
-				for (std::shared_ptr<Move> move : pieceMoves)
-				{
-					Move* nextMove = move.get();
-					bool mobility = false;
-					std::pair<int, int> origin = nextMove->getOriginPosition();
-					std::pair<int, int> destination = nextMove->getDestinationPosition();
+				//for (std::shared_ptr<Move> move : pieceMoves)
+				//{
+				//	Move* nextMove = move.get();
+				//	bool mobility = true;
+				//	std::pair<int, int> origin = nextMove->getOriginPosition();
+				//	std::pair<int, int> destination = nextMove->getDestinationPosition();
 
-					//Generate attack tables and check if mobility bonus applies.
-					//mobility bonus: having more forward mobility means more board control. 
-					if (color == PieceColor::WHITE)
-					{
-						//check for row growth
-						if (destination.first > origin.first)
-							//mobility = true;
-						//Increment attack table at that position
-						attackTable[destination.first][destination.second]++;
-					}
-					else if (color == PieceColor::BLACK)
-					{
-						if (destination.first < origin.first)
-							//mobility = true;
-						attackTable[destination.first][destination.second]--;
-					}
+				//	//Generate attack tables and check if mobility bonus applies.
+				//	//mobility bonus: having more forward mobility means more board control. 
+				//	if (color == PieceColor::WHITE)
+				//	{
+				//		//check for row growth
+				//		//if (destination.first > origin.first)
+				//			//mobility = true;
+				//		//Increment attack table at that position
+				//		attackTable[destination.first][destination.second]++;
+				//	}
+				//	else if (color == PieceColor::BLACK)
+				//	{
+				//		//if (destination.first < origin.first)
+				//			//mobility = true;
+				//		attackTable[destination.first][destination.second]--;
+				//	}
 
-					//There's a different mobility bonus based on the piece type
-					if(mobility)
-						switch (type) {
-						case(PieceType::ROOK):
-							pip.value += 2;
-						case(PieceType::BISHOP):
-							pip.value += 4;
-						case(PieceType::KNIGHT):
-							pip.value += 50;
-						case(PieceType::QUEEN):
-							pip.value += 1;
-						}
-				}
+				//	//There's a different mobility bonus based on the piece type
+				//	if(mobility)
+				//		switch (type) {
+				//		case(PieceType::ROOK):
+				//			pip.value += 2;
+				//		case(PieceType::BISHOP):
+				//			pip.value += 4;
+				//		case(PieceType::KNIGHT):
+				//			pip.value += 50;
+				//		case(PieceType::QUEEN):
+				//			pip.value += 1;
+				//		}
+				//}
 			}
 		}
 	}
@@ -121,8 +121,8 @@ int Board::GetHeuristic(GameStatus* p_status)
 	{
 		//Threat analysis: if less friendly pieces attack this spot than enemy pieces, then apply a penalty
 		//if (attackTable[pip.row][pip.col] < 0)
-			//attack table is negative here, so addition removes value
-			//pip.value += attackTable[pip.row][pip.col] * 20;
+		//	//attack table is negative here, so addition removes value
+		//	pip.value += attackTable[pip.row][pip.col] * 20;
 		heuristic += pip.value;
 
 	}
@@ -130,8 +130,8 @@ int Board::GetHeuristic(GameStatus* p_status)
 	{
 		//Threat analysis: if less friendly pieces attack this spot than enemy pieces, then apply a penalty
 		//if (attackTable[pip.row][pip.col] > 0)
-			//attack table is positive here, therefore subtract
-			//pip.value -= attackTable[pip.row][pip.col] * 20;
+		//	//attack table is positive here, therefore subtract
+		//	pip.value -= attackTable[pip.row][pip.col] * 20;
 		heuristic -= pip.value;
 	}
 	//Determine that this board is now in endgame

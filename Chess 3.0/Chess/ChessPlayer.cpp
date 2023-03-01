@@ -29,18 +29,18 @@ ChessPlayer::ChessPlayer(Board* pBoard, GameStatus* pGameStatus, Gameplay* pGame
 	m_chess = p_game;
 }
 
-unsigned int ChessPlayer::getAllLivePieces(vecPieces& vpieces)
+unsigned int ChessPlayer::getAllLivePieces(vecPieces& vpieces, Board* board)
 {
 	vpieces.clear();
 
 	PieceInPosition pip;
 
 	unsigned int count = 0;
-	for (int i = m_pBoard->MIN_ROW_INDEX; i < m_pBoard->MAX_ROW_INDEX; i++)
+	for (int i = board->MIN_ROW_INDEX; i < board->MAX_ROW_INDEX; i++)
 	{
-		for (int j = m_pBoard->MIN_COL_INDEX; j < m_pBoard->MAX_COL_INDEX; j++)
+		for (int j = board->MIN_COL_INDEX; j < board->MAX_COL_INDEX; j++)
 		{
-			std::shared_ptr<Piece> pPiece = m_pBoard->getSquare(i, j)->getOccupyingPiece();
+			std::shared_ptr<Piece> pPiece = board->getSquare(i, j)->getOccupyingPiece();
 
 			if (pPiece == nullptr)
 				continue;
@@ -58,9 +58,9 @@ unsigned int ChessPlayer::getAllLivePieces(vecPieces& vpieces)
 	return count;
 }
 
-vector<std::shared_ptr<Move>> ChessPlayer::getValidMovesForPiece(PieceInPosition pip)
+vector<std::shared_ptr<Move>> ChessPlayer::getValidMovesForPiece(PieceInPosition pip, Board* board, GameStatus* status)
 {
-	return Gameplay::getValidMoves(m_pGameStatus, m_pBoard, pip.piece, pip.row, pip.col);
+	return Gameplay::getValidMoves(status, board, pip.piece, pip.row, pip.col);
 }
 
 // chooseAIMove
@@ -69,7 +69,7 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 {
 	//Get all pieces of the player
 	vecPieces vPieces;
-	unsigned int pieceCount = getAllLivePieces(vPieces);
+	unsigned int pieceCount = getAllLivePieces(vPieces, m_pBoard);
 
 	//best move value is set to the minimal value for each player
 	int bestMoveValue;
@@ -82,7 +82,7 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 	int beta; beta = std::numeric_limits<int>::max();
 	for (PieceInPosition pip : vPieces)
 	{
-		vector<shared_ptr<Move>> pieceMoves = getValidMovesForPiece(pip); 
+		vector<shared_ptr<Move>> pieceMoves = getValidMovesForPiece(pip, m_pBoard, m_pGameStatus); 
 		for (shared_ptr<Move> move : pieceMoves)
 		{
 			//Generate a board state from this move
@@ -165,15 +165,15 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 	//Get all pieces of the player
 	vecPieces vPieces;
 	if (currentPlayerColor == PieceColor::WHITE)
-		m_chess->getWhitePlayer()->getAllLivePieces(vPieces);
+		m_chess->getWhitePlayer()->getAllLivePieces(vPieces, board);
 	else
-		m_chess->getBlackPlayer()->getAllLivePieces(vPieces);
+		m_chess->getBlackPlayer()->getAllLivePieces(vPieces, board);
 
 	//Get all possible moves
 	std::vector<shared_ptr<Move>> possibleMoves = std::vector<shared_ptr<Move>>();
 	for (PieceInPosition pip : vPieces)
 	{
-		vector<shared_ptr<Move>> pieceMoves = getValidMovesForPiece(pip);
+		vector<shared_ptr<Move>> pieceMoves = getValidMovesForPiece(pip, board, status);
 		for (shared_ptr<Move> move : pieceMoves)
 			possibleMoves.push_back(move);
 	}
@@ -232,7 +232,7 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 
 void ChessPlayer::GenerateNextTurn(PieceColor opposingPlayerColor, Board*& outBoard, GameStatus*& outStatus, Board* currentBoard, GameStatus* currentStatus, shared_ptr<Move> moveToMake)
 {
-	outBoard = new Board(*currentBoard);
+	outBoard = currentBoard->hardCopy();
 	outStatus = new GameStatus(*currentStatus);
 	Gameplay::move(outStatus, outBoard, moveToMake);
 	//Reset EnPassantable status, like at the end of turn.

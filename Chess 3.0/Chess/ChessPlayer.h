@@ -5,7 +5,7 @@
 #include <memory>
 #include "Chess/Move.h"
 
-#define MAX_DEPTH 3
+#define MAX_DEPTH 2
 
 using namespace std;
 
@@ -27,8 +27,8 @@ public:
 
 	void			setAI() { m_bAI = true; }
 	bool			isAI() { return m_bAI; }
-	unsigned int	getAllLivePieces(vecPieces& vpieces);
-	vector<std::shared_ptr<Move>>	getValidMovesForPiece(PieceInPosition pip);
+	unsigned int	getAllLivePieces(vecPieces& vpieces, Board* board);
+	vector<std::shared_ptr<Move>>	getValidMovesForPiece(PieceInPosition pip, Board* board, GameStatus* status);
 	bool			chooseAIMove(std::shared_ptr<Move>& moveToMake);
 
 protected:

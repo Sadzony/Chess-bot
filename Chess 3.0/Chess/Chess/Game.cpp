@@ -116,15 +116,6 @@ bool Game::move(int fromRow, int fromCol, int toRow, int toCol)
 			if (gameplay->move(status, board, valid[index]))
 			{
 				log.push(valid[index]);
-				
-
-				// your code here
-				vecPieces vpiecesBlack;
-				vecPieces vpiecesWhite;
-
-				unsigned int numPiecesBlack = m_PlayerBlack->getAllLivePieces(vpiecesBlack);
-				unsigned int numPiecesWhite = m_PlayerWhite->getAllLivePieces(vpiecesWhite);
-				vector<std::shared_ptr<Move>> vMove = m_PlayerBlack->getValidMovesForPiece(vpiecesBlack[0]);
 
 				return true;
 			}
