@@ -15,6 +15,7 @@ it contains Square objects (which contain a piece, or is empty).
 
 class GameStatus;
 typedef std::vector<PieceInPosition> vecPieces;
+typedef std::vector<ValuedPiece> valuedPieceList;
 typedef std::pair<PieceColor, PieceType> PieceCharacteristics;
 
 class Board

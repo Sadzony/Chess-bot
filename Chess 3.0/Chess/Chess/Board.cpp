@@ -52,8 +52,8 @@ int Board::GetHeuristic(GameStatus* p_status)
 	int heuristic = 0;
 	int pieceCount = 0;
 
-	vecPieces whitePieces;
-	vecPieces blackPieces;
+	valuedPieceList whitePieces = valuedPieceList();
+	valuedPieceList blackPieces = valuedPieceList();
 	
 	int attackTable[WIDTH][HEIGHT];
 	//iterate every square
@@ -65,7 +65,7 @@ int Board::GetHeuristic(GameStatus* p_status)
 				std::shared_ptr<Piece> pieceOnSquare = squares[row][col].getOccupyingPiece();
 				PieceType type = pieceOnSquare.get()->getType();
 				PieceColor color = pieceOnSquare.get()->getColor();
-				PieceInPosition pip = PieceInPosition(pieceOnSquare, col, row);
+				ValuedPiece pip = ValuedPiece(pieceOnSquare, col, row);
 				pieceCount++;
 				if (color == PieceColor::WHITE)
 					whitePieces.push_back(pip);
@@ -117,7 +117,7 @@ int Board::GetHeuristic(GameStatus* p_status)
 			}
 		}
 	}
-	for (PieceInPosition pip : whitePieces)
+	for (ValuedPiece pip : whitePieces)
 	{
 		//Threat analysis: if less friendly pieces attack this spot than enemy pieces, then apply a penalty
 		if (attackTable[pip.row][pip.col] < 0)
@@ -126,7 +126,7 @@ int Board::GetHeuristic(GameStatus* p_status)
 		heuristic += pip.value;
 
 	}
-	for (PieceInPosition pip : blackPieces)
+	for (ValuedPiece pip : blackPieces)
 	{
 		//Threat analysis: if less friendly pieces attack this spot than enemy pieces, then apply a penalty
 		if (attackTable[pip.row][pip.col] > 0)
