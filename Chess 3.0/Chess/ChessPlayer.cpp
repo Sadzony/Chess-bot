@@ -71,7 +71,7 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 	vecPieces vPieces;
 	unsigned int pieceCount = getAllLivePieces(vPieces);
 
-	//Find the possible moves of every piece and try to find the best move
+	//best move value is set to the minimal value for each player
 	int bestMoveValue;
 	if (m_colour == PieceColor::BLACK)
 		bestMoveValue = std::numeric_limits<int>::max();
@@ -139,31 +139,26 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 
 int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor currentPlayerColor, int alpha, int beta)
 {
+	bool isCheckMate = (Gameplay::isCheckMateState(status, board, PieceColor::WHITE) || Gameplay::isCheckMateState(status, board, PieceColor::BLACK));
 	//Return heuristic at end of tree or on check mate
-	if (depth >= MAX_DEPTH || Gameplay::isCheckMateState(status, board, PieceColor::WHITE))
+	if (depth >= MAX_DEPTH || isCheckMate)
 	{
 		//Evaluate the heuristic of the board
 		int heuristic = board->GetHeuristic(status);
 		//CheckMateState checks for valid moves. To find if there's a winner, find check state too.
-		if (Gameplay::isCheckState(status, board, PieceColor::WHITE))
+		bool checkWhite = Gameplay::isCheckState(status, board, PieceColor::WHITE);
+		bool checkBlack = Gameplay::isCheckState(status, board, PieceColor::BLACK);
+		if (isCheckMate && checkWhite)
 		{
 			heuristic -= (int)PieceType::KING;
 		}
-		else
-			//Stalemate
-			return 0;
-		return heuristic;
-	}
-	else if (depth >= MAX_DEPTH || Gameplay::isCheckMateState(status, board, PieceColor::BLACK))
-	{
-		int heuristic = board->GetHeuristic(status);
-		//CheckMateState checks for valid moves. To find if there's a winner, find check state too.
-		if (Gameplay::isCheckState(status, board, PieceColor::BLACK))
+		else if (isCheckMate && checkBlack)
 		{
 			heuristic += (int)PieceType::KING;
 		}
-		//Stalemate
-		else
+
+		else if (isCheckMate && !checkWhite && !checkBlack)
+			//Stalemate
 			return 0;
 		return heuristic;
 	}

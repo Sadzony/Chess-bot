@@ -27,3 +27,11 @@ PieceColor Piece::getColor()
 {
 	return color;
 }
+
+ValuedPiece::ValuedPiece(std::shared_ptr<Piece> pPiece, int pCol, int pRow)
+{
+	piece = pPiece; 
+	value = (int)piece.get()->getType(); 
+	col = pCol; 
+	row = pRow;
+}

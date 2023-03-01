@@ -25,10 +25,9 @@ struct PieceInPosition
 };
 struct ValuedPiece
 {
-	ValuedPiece();
-	ValuedPiece(std::shared_ptr<Piece> pPiece, int pCol, int pRow) { piece = pPiece; value = (int)piece.get()->getType(); col = pCol; row = pRow; }
+	ValuedPiece(std::shared_ptr<Piece> pPiece, int pCol, int pRow);
 	std::shared_ptr<Piece> piece;
-	int value = 0;
+	int value;
 	int col;
 	int row;
 };

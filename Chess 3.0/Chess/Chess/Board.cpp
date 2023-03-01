@@ -73,7 +73,7 @@ int Board::GetHeuristic(GameStatus* p_status)
 					blackPieces.push_back(pip);
 
 				//Generate space bonus from piece square table
-				pip.value = pieceSquareTables[std::make_pair(color, type)].at(col).at(row);
+				//pip.value += pieceSquareTables[std::make_pair(color, type)].at(col).at(row);
 
 				//Get all available moves for this piece
 				std::vector<std::shared_ptr<Move>> pieceMoves = Gameplay::getValidMoves(p_status, this, pieceOnSquare, row, col);
@@ -90,14 +90,14 @@ int Board::GetHeuristic(GameStatus* p_status)
 					{
 						//check for row growth
 						if (destination.first > origin.first)
-							mobility = true;
+							//mobility = true;
 						//Increment attack table at that position
 						attackTable[destination.first][destination.second]++;
 					}
 					else if (color == PieceColor::BLACK)
 					{
 						if (destination.first < origin.first)
-							mobility = true;
+							//mobility = true;
 						attackTable[destination.first][destination.second]--;
 					}
 
@@ -120,18 +120,18 @@ int Board::GetHeuristic(GameStatus* p_status)
 	for (ValuedPiece pip : whitePieces)
 	{
 		//Threat analysis: if less friendly pieces attack this spot than enemy pieces, then apply a penalty
-		if (attackTable[pip.row][pip.col] < 0)
+		//if (attackTable[pip.row][pip.col] < 0)
 			//attack table is negative here, so addition removes value
-			pip.value += attackTable[pip.row][pip.col] * 20;
+			//pip.value += attackTable[pip.row][pip.col] * 20;
 		heuristic += pip.value;
 
 	}
 	for (ValuedPiece pip : blackPieces)
 	{
 		//Threat analysis: if less friendly pieces attack this spot than enemy pieces, then apply a penalty
-		if (attackTable[pip.row][pip.col] > 0)
+		//if (attackTable[pip.row][pip.col] > 0)
 			//attack table is positive here, therefore subtract
-			pip.value -= attackTable[pip.row][pip.col] * 20;
+			//pip.value -= attackTable[pip.row][pip.col] * 20;
 		heuristic -= pip.value;
 	}
 	//Determine that this board is now in endgame
@@ -278,9 +278,9 @@ void Board::GeneratePieceSquareTables()
 	pieceTable =
 	{ {
 		{-20, -10, -10,  -5,  -5, -10, -10, -20},
-		{-10,   0,   5,   0,   0,   0,   0, -10},
-		{-10,   5,   5,   5,   5,   5,   0, -10},
-		{  0,   0,   5,   5,   5,   5,   0,  -5},
+		{-10,   0,   0,   0,   0,   5,   0, -10},
+		{-10,   0,   5,   5,   5,   5,   5, -10},
+		{ -5,   0,   5,   5,   5,   5,   0,   0},
 		{ -5,   0,   5,   5,   5,   5,   0,  -5},
 		{-10,   0,   5,   5,   5,   5,   0, -10},
 		{-10,   0,   0,   0,   0,   0,   0, -10},
@@ -294,9 +294,9 @@ void Board::GeneratePieceSquareTables()
 		{-10,   0,   0,   0,   0,   0,   0, -10},
 		{-10,   0,   5,   5,   5,   5,   0, -10},
 		{ -5,   0,   5,   5,   5,   5,   0,  -5},
-		{  0,   0,   5,   5,   5,   5,   0,  -5},
-		{-10,   5,   5,   5,   5,   5,   0, -10},
-		{-10,   0,   5,   0,   0,   0,   0, -10},
+		{ -5,   0,   5,   5,   5,   5,   0,   0},
+		{-10,   0,   5,   5,   5,   5,   5, -10},
+		{-10,   0,   0,   0,   0,   5,   0, -10},
 		{-20, -10, -10,  -5,  -5, -10, -10, -20}
 	} };
 	pieceSquareTables[std::make_pair(PieceColor::BLACK, PieceType::QUEEN)] = pieceTable;
@@ -327,20 +327,6 @@ void Board::GeneratePieceSquareTables()
 		{ 20,  30,  10,   0,   0,  10,  30,  20}
 	} };
 	pieceSquareTables[std::make_pair(PieceColor::BLACK, PieceType::KING)] = pieceTable;
-
-
-	//Empty
-	pieceTable =
-	{ {
-		{  0,   0,   0,   0,   0,    0,   0,   0},
-		{  0,   0,   0,   0,   0,    0,   0,   0},
-		{  0,   0,   0,   0,   0,    0,   0,   0},
-		{  0,   0,   0,   0,   0,    0,   0,   0},
-		{  0,   0,   0,   0,   0,    0,   0,   0},
-		{  0,   0,   0,   0,   0,    0,   0,   0},
-		{  0,   0,   0,   0,   0,    0,   0,   0},
-		{  0,   0,   0,   0,   0,    0,   0,   0}
-	} };
 }
 
 void Board::GenerateEndgameTable()
