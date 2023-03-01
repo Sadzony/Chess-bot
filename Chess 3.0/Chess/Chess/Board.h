@@ -10,11 +10,12 @@ it contains Square objects (which contain a piece, or is empty).
 #include <memory>
 #include <vector>
 #include <utility>
+#include <map>
 
 
 class GameStatus;
 typedef std::vector<PieceInPosition> vecPieces;
-typedef std::pair<PieceColor, PieceInPosition> PieceCharacteristics;
+typedef std::pair<PieceColor, PieceType> PieceCharacteristics;
 
 class Board
 {
@@ -23,7 +24,10 @@ public:
 		static const int HEIGHT = 8;
 
 	private:
-		//static const std::map<PieceCharacteristics, std::array<std::array<int, WIDTH>, HEIGHT>> pieceSquareTables;
+		//Piece scores for spaces
+		std::map<PieceCharacteristics, std::array<std::array<int, WIDTH>, HEIGHT>> pieceSquareTables;
+		//Maps a piece to a position on board
+		//std::map<Piece*, 
 		Square squares[WIDTH][HEIGHT];
 	public:
 		static const int MIN_COL_INDEX = 0;
@@ -39,6 +43,9 @@ public:
 		Board* hardCopy();
 		int GetHeuristic(GameStatus* p_status);
 		vecPieces GetLivePieces(PieceColor playerColor);
+
+		void GeneratePieceSquareTables();
+		void GenerateEndgameTable();
 		
 };
 

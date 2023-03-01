@@ -6,6 +6,7 @@ Game::Game()
 {
 	gameplay = new Gameplay();
 	board = new Board();
+	board->GeneratePieceSquareTables();
 	status = new GameStatus();
 	setInitialPieces(PieceColor::WHITE);
 	setInitialPieces(PieceColor::BLACK);
