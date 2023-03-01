@@ -67,20 +67,18 @@ int Board::GetHeuristic(GameStatus* p_status)
 				PieceColor color = pieceOnSquare.get()->getColor();
 				ValuedPiece pip = ValuedPiece(pieceOnSquare, col, row);
 				pieceCount++;
-				if (color == PieceColor::WHITE)
-					whitePieces.push_back(pip);
-				else
-					blackPieces.push_back(pip);
+
 
 				//Generate space bonus from piece square table
-				pip.value += pieceSquareTables[std::make_pair(color, type)].at(col).at(row);
+				int pieceSquareValue = pieceSquareTables[std::make_pair(color, type)].at(col).at(row);
+				pip.value += pieceSquareValue;
 
 				//Get all available moves for this piece
-				std::vector<std::shared_ptr<Move>> pieceMoves = Gameplay::getValidMoves(p_status, this, pieceOnSquare, row, col);
+				//std::vector<std::shared_ptr<Move>> pieceMoves = Gameplay::getValidMoves(p_status, this, pieceOnSquare, row, col);
 				//for (std::shared_ptr<Move> move : pieceMoves)
 				//{
 				//	Move* nextMove = move.get();
-				//	bool mobility = true;
+				//	//bool mobility = false;
 				//	std::pair<int, int> origin = nextMove->getOriginPosition();
 				//	std::pair<int, int> destination = nextMove->getDestinationPosition();
 
@@ -102,18 +100,24 @@ int Board::GetHeuristic(GameStatus* p_status)
 				//	}
 
 				//	//There's a different mobility bonus based on the piece type
-				//	if(mobility)
-				//		switch (type) {
-				//		case(PieceType::ROOK):
-				//			pip.value += 2;
-				//		case(PieceType::BISHOP):
-				//			pip.value += 4;
-				//		case(PieceType::KNIGHT):
-				//			pip.value += 50;
-				//		case(PieceType::QUEEN):
-				//			pip.value += 1;
-				//		}
+				//	//if(mobility)
+				//	//	switch (type) {
+				//	//	case(PieceType::ROOK):
+				//	//		pip.value += 2;
+				//	//	case(PieceType::BISHOP):
+				//	//		pip.value += 4;
+				//	//	case(PieceType::KNIGHT):
+				//	//		pip.value += 50;
+				//	//	case(PieceType::QUEEN):
+				//	//		pip.value += 1;
+				//	//	}
 				//}
+
+				//Add the piece to the litst of pieces.
+				if (color == PieceColor::WHITE)
+					whitePieces.push_back(pip);
+				else
+					blackPieces.push_back(pip);
 			}
 		}
 	}
@@ -121,8 +125,8 @@ int Board::GetHeuristic(GameStatus* p_status)
 	{
 		//Threat analysis: if less friendly pieces attack this spot than enemy pieces, then apply a penalty
 		//if (attackTable[pip.row][pip.col] < 0)
-		//	//attack table is negative here, so addition removes value
-		//	pip.value += attackTable[pip.row][pip.col] * 20;
+			//attack table is negative here, so addition removes value
+			//pip.value += attackTable[pip.row][pip.col] * 20;;
 		heuristic += pip.value;
 
 	}
@@ -130,13 +134,13 @@ int Board::GetHeuristic(GameStatus* p_status)
 	{
 		//Threat analysis: if less friendly pieces attack this spot than enemy pieces, then apply a penalty
 		//if (attackTable[pip.row][pip.col] > 0)
-		//	//attack table is positive here, therefore subtract
-		//	pip.value -= attackTable[pip.row][pip.col] * 20;
+			//attack table is positive here, therefore subtract
+			//pip.value -= attackTable[pip.row][pip.col] * 20;
 		heuristic -= pip.value;
 	}
 	//Determine that this board is now in endgame
-	if (abs(heuristic) > 1000 || pieceCount < 8)
-		GenerateEndgameTable();
+	//if (abs(heuristic) > 1000 || pieceCount < 8)
+	//	GenerateEndgameTable();
 	return heuristic;
 }
 

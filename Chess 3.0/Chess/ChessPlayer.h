@@ -5,7 +5,7 @@
 #include <memory>
 #include "Chess/Move.h"
 
-#define MAX_DEPTH 2
+#define MAX_DEPTH 3
 
 using namespace std;
 

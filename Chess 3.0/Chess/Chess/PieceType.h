@@ -7,7 +7,7 @@ enum class PieceType : int
 	ROOK 	= 500,
 	KNIGHT 	= 320,
 	BISHOP	= 333,
-	KING	= 100000,
+	KING	= 10000,
 	QUEEN	= 880
 };
 

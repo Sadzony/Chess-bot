@@ -82,7 +82,7 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 	int beta; beta = std::numeric_limits<int>::max();
 	for (PieceInPosition pip : vPieces)
 	{
-		vector<shared_ptr<Move>> pieceMoves = getValidMovesForPiece(pip, m_pBoard, m_pGameStatus); 
+		vector<shared_ptr<Move>> pieceMoves = Gameplay::getValidMoves(m_pGameStatus, m_pBoard, pip.piece, pip.row, pip.col);
 		for (shared_ptr<Move> move : pieceMoves)
 		{
 			//Generate a board state from this move
@@ -139,25 +139,24 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 
 int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor currentPlayerColor, int alpha, int beta)
 {
-	bool isCheckMate = (Gameplay::isCheckMateState(status, board, PieceColor::WHITE) || Gameplay::isCheckMateState(status, board, PieceColor::BLACK));
+	bool isCheckMate = Gameplay::isCheckMateState(status, board, currentPlayerColor);
 	//Return heuristic at end of tree or on check mate
 	if (depth >= MAX_DEPTH || isCheckMate)
 	{
 		//Evaluate the heuristic of the board
 		int heuristic = board->GetHeuristic(status);
 		//CheckMateState checks for valid moves. To find if there's a winner, find check state too.
-		bool checkWhite = Gameplay::isCheckState(status, board, PieceColor::WHITE);
-		bool checkBlack = Gameplay::isCheckState(status, board, PieceColor::BLACK);
-		if (isCheckMate && checkWhite)
+		bool check = Gameplay::isCheckState(status, board, currentPlayerColor);
+		if (isCheckMate && check && currentPlayerColor == PieceColor::WHITE)
 		{
 			heuristic -= (int)PieceType::KING;
 		}
-		else if (isCheckMate && checkBlack)
+		else if (isCheckMate && check && currentPlayerColor == PieceColor::BLACK)
 		{
 			heuristic += (int)PieceType::KING;
 		}
 
-		else if (isCheckMate && !checkWhite && !checkBlack)
+		else if (isCheckMate && !check)
 			//Stalemate
 			return 0;
 		return heuristic;
@@ -199,8 +198,7 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 			delete nextStatus;
 			//Find the value of alpha, which is the best value that the white player can take
 			alpha = max(alpha, bestMoveValue);
-			//If beta (best of black player) is smaller than alpha, the loop can be exit early
-			if (beta <= alpha)
+			if (alpha >= beta)
 				break;
 		}
 		return bestMoveValue;
@@ -223,6 +221,7 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 			delete nextStatus;
 			//Find the value of beta, which is the best value that the black player can take
 			beta = min(beta, bestMoveValue);
+			//If beta (best of black player) is smaller than alpha, the loop can be exit early
 			if (beta <= alpha)
 				break;
 		}
