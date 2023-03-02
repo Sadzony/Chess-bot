@@ -12,7 +12,7 @@ using namespace std;
 void ChessPlayer::setupPlayers(ChessPlayer** playerWhite, ChessPlayer** playerBlack, Board* pBoard, GameStatus* pGameStatus, Gameplay* pGamePlay, Game* p_game)
 {
 	*playerBlack = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::BLACK, p_game);
-	(*playerBlack)->setAI();
+	//(*playerBlack)->setAI();
 
 	*playerWhite = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::WHITE, p_game);
 	(*playerWhite)->setAI();
@@ -94,6 +94,7 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 
 			//Find the value of this move by finding the future possibilities using minimax
 			int moveValue = minimax(nextBoard, nextStatus, 1, opposingColor, alpha, beta);
+
 			
 			delete nextBoard;
 			delete nextStatus;
@@ -101,6 +102,8 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 			//If the move is better than current best, set it as best move.
 			if (m_colour == PieceColor::BLACK)
 			{
+				if (move.get()->getType() == MoveType::CASTLING)
+					moveValue -= 100;
 				if (moveValue < bestMoveValue)
 				{
 					bestMoveValue = moveValue;
@@ -114,6 +117,8 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 			}
 			else if (m_colour == PieceColor::WHITE)
 			{
+				if (move.get()->getType() == MoveType::CASTLING)
+					moveValue += 100;
 				if (moveValue > bestMoveValue)
 				{
 					bestMoveValue = moveValue;
@@ -193,7 +198,10 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 			GameStatus* nextStatus;
 			GenerateNextTurn(opposingColor, nextBoard, nextStatus, board, status, move);
 			//Run minimax on this board state
-			bestMoveValue = max(bestMoveValue, minimax(nextBoard, nextStatus, depth + 1, opposingColor, alpha, beta));
+			int moveVal = minimax(nextBoard, nextStatus, depth + 1, opposingColor, alpha, beta);
+			if (move.get()->getType() == MoveType::CASTLING)
+				moveVal += 100;
+			bestMoveValue = max(bestMoveValue, moveVal);
 			delete nextBoard;
 			delete nextStatus;
 			//Find the value of alpha, which is the best value that the white player can take
@@ -216,7 +224,10 @@ int ChessPlayer::minimax(Board* board, GameStatus* status, int depth, PieceColor
 			GameStatus* nextStatus;
 			GenerateNextTurn(opposingColor, nextBoard, nextStatus, board, status, move);
 			//Run minimax on this board state
-			bestMoveValue = min(bestMoveValue, minimax(nextBoard, nextStatus, depth + 1, opposingColor, alpha, beta));
+			int moveVal = minimax(nextBoard, nextStatus, depth + 1, opposingColor, alpha, beta);
+			if (move.get()->getType() == MoveType::CASTLING)
+				moveVal -= 100;
+			bestMoveValue = min(bestMoveValue, moveVal);
 			delete nextBoard;
 			delete nextStatus;
 			//Find the value of beta, which is the best value that the black player can take
@@ -234,6 +245,22 @@ void ChessPlayer::GenerateNextTurn(PieceColor opposingPlayerColor, Board*& outBo
 	outBoard = currentBoard->hardCopy();
 	outStatus = new GameStatus(*currentStatus);
 	Gameplay::move(outStatus, outBoard, moveToMake);
+	//Check for promotion
+	Move* move = moveToMake.get();
+	Piece* piece = move->getMovedPiece().get();
+	if (piece->getType() == PieceType::PAWN && piece->getColor() == PieceColor::WHITE)
+	{
+		std::pair<int, int> dest = move->getDestinationPosition();
+		if (dest.first == 7)
+			Gameplay::pawnPromotion(outBoard, 7, dest.second, PieceType::QUEEN);
+	}
+	else if (piece->getType() == PieceType::PAWN && piece->getColor() == PieceColor::BLACK)
+	{
+		std::pair<int, int> dest = move->getDestinationPosition();
+		if (dest.first == 0)
+			Gameplay::pawnPromotion(outBoard, 0, dest.second, PieceType::QUEEN);
+	}
+
 	//Reset EnPassantable status, like at the end of turn.
 	outStatus->setPieceEnPassantable(opposingPlayerColor, NULL);
 }

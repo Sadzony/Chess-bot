@@ -55,7 +55,8 @@ int Board::GetHeuristic(GameStatus* p_status)
 	valuedPieceList whitePieces = valuedPieceList();
 	valuedPieceList blackPieces = valuedPieceList();
 	
-	int attackTable[WIDTH][HEIGHT] = {};
+	int whiteAttackTable[WIDTH][HEIGHT] = {};
+	int blackAttackTable[WIDTH][HEIGHT] = {};
 	//iterate every square
 	for (int row = MIN_ROW_INDEX; row < MAX_ROW_INDEX; row++) {
 		for (int col = MIN_COL_INDEX; col < MAX_COL_INDEX; col++) {
@@ -70,48 +71,79 @@ int Board::GetHeuristic(GameStatus* p_status)
 
 
 				//Generate space bonus from piece square table
-				int pieceSquareValue = pieceSquareTables[std::make_pair(color, type)].at(col).at(row);
-				pip.value += pieceSquareValue;
+				//int pieceSquareValue = pieceSquareTables[std::make_pair(color, type)].at(col).at(row);
+				//pip.value += pieceSquareValue;
+
+				//attack table for pawns
+				if (type == PieceType::PAWN && color == PieceColor::WHITE)
+				{
+					int attackRow = row + 1;
+					int attackCol = col + 1;
+					if (row < MAX_ROW_INDEX)
+					{
+						if(col < MAX_COL_INDEX)
+							whiteAttackTable[attackRow][attackCol]++;
+						attackCol = col - 1;
+						if (col >= MIN_COL_INDEX)
+							whiteAttackTable[attackRow][attackCol]++;
+					}
+				}
+				else if (type == PieceType::PAWN && color == PieceColor::BLACK)
+				{
+					int attackRow = row - 1;
+					int attackCol = col + 1;
+					if (row >= MIN_COL_INDEX)
+					{
+						if (col < MAX_COL_INDEX)
+							blackAttackTable[attackRow][attackCol]++;
+						attackCol = col - 1;
+						if (col >= MIN_COL_INDEX)
+							blackAttackTable[attackRow][attackCol]++;
+					}
+				}
 
 				//Get all available moves for this piece
-				//std::vector<std::shared_ptr<Move>> pieceMoves = Gameplay::getValidMoves(p_status, this, pieceOnSquare, row, col);
-				//for (std::shared_ptr<Move> move : pieceMoves)
-				//{
-				//	Move* nextMove = move.get();
-				//	//bool mobility = false;
-				//	std::pair<int, int> origin = nextMove->getOriginPosition();
-				//	std::pair<int, int> destination = nextMove->getDestinationPosition();
+				std::vector<std::shared_ptr<Move>> pieceMoves = Gameplay::getValidMoves(p_status, this, pieceOnSquare, row, col);
+				for (std::shared_ptr<Move> move : pieceMoves)
+				{
+					Move* nextMove = move.get();
+					bool mobility = true;
+					//std::pair<int, int> origin = nextMove->getOriginPosition();
+					std::pair<int, int> destination = nextMove->getDestinationPosition();
 
-				//	//Generate attack tables and check if mobility bonus applies.
-				//	//mobility bonus: having more forward mobility means more board control. 
-				//	if (color == PieceColor::WHITE)
-				//	{
-				//		//check for row growth
-				//		//if (destination.first > origin.first)
-				//			//mobility = true;
-				//		//Increment attack table at that position
-				//		attackTable[destination.first][destination.second]++;
-				//	}
-				//	else if (color == PieceColor::BLACK)
-				//	{
-				//		//if (destination.first < origin.first)
-				//			//mobility = true;
-				//		attackTable[destination.first][destination.second]--;
-				//	}
+					//Generate attack tables and check if mobility bonus applies.
+					//mobility bonus: having more forward mobility means more board control. 
+					if (color == PieceColor::WHITE)
+					{
+						//check for row growth
+						//if (destination.first > origin.first)
+							//mobility = true;
+						//Increment attack table at that position
+						if (type != PieceType::PAWN)
+							whiteAttackTable[destination.first][destination.second]++;
+					}
+					else if (color == PieceColor::BLACK)
+					{
+						//if (destination.first < origin.first)
+							//mobility = true;
+						if(type != PieceType::PAWN)
+							blackAttackTable[destination.first][destination.second]++;
+					}
 
-				//	//There's a different mobility bonus based on the piece type
-				//	//if(mobility)
-				//	//	switch (type) {
-				//	//	case(PieceType::ROOK):
-				//	//		pip.value += 2;
-				//	//	case(PieceType::BISHOP):
-				//	//		pip.value += 4;
-				//	//	case(PieceType::KNIGHT):
-				//	//		pip.value += 50;
-				//	//	case(PieceType::QUEEN):
-				//	//		pip.value += 1;
-				//	//	}
-				//}
+					//There's a different mobility bonus based on the piece type
+					if(mobility){
+						switch (type) {
+						case(PieceType::ROOK):
+							pip.value += 2;
+						case(PieceType::BISHOP):
+							pip.value += 2;
+						case(PieceType::KNIGHT):
+							pip.value += 20;
+						case(PieceType::QUEEN):
+							pip.value += 1;
+						}
+					}
+				}
 
 				//Add the piece to the litst of pieces.
 				if (color == PieceColor::WHITE)
@@ -123,20 +155,34 @@ int Board::GetHeuristic(GameStatus* p_status)
 	}
 	for (ValuedPiece pip : whitePieces)
 	{
+		float multiplier = 1.0f;
 		//Threat analysis: if less friendly pieces attack this spot than enemy pieces, then apply a penalty
-		//if (attackTable[pip.row][pip.col] < 0)
-			//attack table is negative here, so addition removes value
-			//pip.value += attackTable[pip.row][pip.col] * 20;;
-		heuristic += pip.value;
+		int defenceValue = whiteAttackTable[pip.row][pip.col];
+		int threatValue = blackAttackTable[pip.row][pip.col];
+		
+		if (threatValue > 0)
+		{
+			int difference = defenceValue - threatValue;
+			if (difference <= 0)
+				multiplier = 0.9f + (0.1f * difference);
+		}
+		heuristic += pip.value * multiplier;
 
 	}
 	for (ValuedPiece pip : blackPieces)
 	{
+		float multiplier = 1.0f;
 		//Threat analysis: if less friendly pieces attack this spot than enemy pieces, then apply a penalty
-		//if (attackTable[pip.row][pip.col] > 0)
-			//attack table is positive here, therefore subtract
-			//pip.value -= attackTable[pip.row][pip.col] * 20;
-		heuristic -= pip.value;
+		int defenceValue = blackAttackTable[pip.row][pip.col];
+		int threatValue = whiteAttackTable[pip.row][pip.col];
+
+		if (threatValue > 0)
+		{
+			int difference = defenceValue - threatValue;
+			if (difference <= 0)
+				multiplier = 0.9f + (0.1f * difference);
+		}
+		heuristic -= pip.value * multiplier;
 	}
 	//Determine that this board is now in endgame
 	//if (abs(heuristic) > 1000 || pieceCount < 8)
