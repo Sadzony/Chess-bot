@@ -12,7 +12,7 @@ using namespace std;
 void ChessPlayer::setupPlayers(ChessPlayer** playerWhite, ChessPlayer** playerBlack, Board* pBoard, GameStatus* pGameStatus, Gameplay* pGamePlay, Game* p_game)
 {
 	*playerBlack = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::BLACK, p_game);
-	//(*playerBlack)->setAI();
+	(*playerBlack)->setAI();
 
 	*playerWhite = new ChessPlayer(pBoard, pGameStatus, pGamePlay, PieceColor::WHITE, p_game);
 	(*playerWhite)->setAI();
@@ -67,69 +67,81 @@ vector<std::shared_ptr<Move>> ChessPlayer::getValidMovesForPiece(PieceInPosition
 // in this method - for an AI chess player - choose a move to make. This is called once per play. 
 bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 {
-	//Get all pieces of the player
-	vecPieces vPieces;
-	unsigned int pieceCount = getAllLivePieces(vPieces, m_pBoard);
-
-	//best move value is set to the minimal value for each player
-	int bestMoveValue;
-	if (m_colour == PieceColor::BLACK)
-		bestMoveValue = std::numeric_limits<int>::max();
-	else
-		bestMoveValue = std::numeric_limits<int>::min();
-	//Run minimax on all the valid moves for all pieces of this player. The first pass of the function is done here, as the move needs to be output
-	int alpha; alpha = std::numeric_limits<int>::min();
-	int beta; beta = std::numeric_limits<int>::max();
-	for (PieceInPosition pip : vPieces)
+	if (!generatedOpening)
+		GenerateOpening();
+	if (!opening.empty())
 	{
-		vector<shared_ptr<Move>> pieceMoves = Gameplay::getValidMoves(m_pGameStatus, m_pBoard, pip.piece, pip.row, pip.col);
-		for (shared_ptr<Move> move : pieceMoves)
+		//Take the move from the front of the opening list, and remove it from the list
+		moveToMake = opening.front();
+		opening.erase(opening.begin());
+	}
+	//if opening completed, move on to minimax
+	else {
+
+		//Get all pieces of the player
+		vecPieces vPieces;
+		unsigned int pieceCount = getAllLivePieces(vPieces, m_pBoard);
+
+		//best move value is set to the minimal value for each player
+		int bestMoveValue;
+		if (m_colour == PieceColor::BLACK)
+			bestMoveValue = std::numeric_limits<int>::max();
+		else
+			bestMoveValue = std::numeric_limits<int>::min();
+		//Run minimax on all the valid moves for all pieces of this player. The first pass of the function is done here, as the move needs to be output
+		int alpha; alpha = std::numeric_limits<int>::min();
+		int beta; beta = std::numeric_limits<int>::max();
+		for (PieceInPosition pip : vPieces)
 		{
-			//Generate a board state from this move
-			Board* nextBoard;
-			GameStatus* nextStatus;
-			//The minimax function starts from next turn, so the opposite color is needed.
-			PieceColor opposingColor = (m_colour == PieceColor::WHITE) ? PieceColor::BLACK : PieceColor::WHITE;
-			GenerateNextTurn(opposingColor, nextBoard, nextStatus, m_pBoard, m_pGameStatus, move);
-
-			//Find the value of this move by finding the future possibilities using minimax
-			int moveValue = minimax(nextBoard, nextStatus, 1, opposingColor, alpha, beta);
-
-			
-			delete nextBoard;
-			delete nextStatus;
-
-			//If the move is better than current best, set it as best move.
-			if (m_colour == PieceColor::BLACK)
+			vector<shared_ptr<Move>> pieceMoves = Gameplay::getValidMoves(m_pGameStatus, m_pBoard, pip.piece, pip.row, pip.col);
+			for (shared_ptr<Move> move : pieceMoves)
 			{
-				if (move.get()->getType() == MoveType::CASTLING)
-					moveValue -= 100;
-				if (moveValue < bestMoveValue)
+				//Generate a board state from this move
+				Board* nextBoard;
+				GameStatus* nextStatus;
+				//The minimax function starts from next turn, so the opposite color is needed.
+				PieceColor opposingColor = (m_colour == PieceColor::WHITE) ? PieceColor::BLACK : PieceColor::WHITE;
+				GenerateNextTurn(opposingColor, nextBoard, nextStatus, m_pBoard, m_pGameStatus, move);
+
+				//Find the value of this move by finding the future possibilities using minimax
+				int moveValue = minimax(nextBoard, nextStatus, 1, opposingColor, alpha, beta);
+
+
+				delete nextBoard;
+				delete nextStatus;
+
+				//If the move is better than current best, set it as best move.
+				if (m_colour == PieceColor::BLACK)
 				{
-					bestMoveValue = moveValue;
-					moveToMake = move;
+					if (move.get()->getType() == MoveType::CASTLING)
+						moveValue -= 100;
+					if (moveValue < bestMoveValue)
+					{
+						bestMoveValue = moveValue;
+						moveToMake = move;
+					}
+					//Find the value of beta, which is the best value that the black player can take
+					beta = min(beta, bestMoveValue);
+					//If beta (best of black) is smaller than alpha (best of white) the loop can exit early.
+					if (beta <= alpha)
+						break;
 				}
-				//Find the value of beta, which is the best value that the black player can take
-				beta = min(beta, bestMoveValue);
-				//If beta (best of black) is smaller than alpha (best of white) the loop can exit early.
-				if (beta <= alpha)
-					break;
-			}
-			else if (m_colour == PieceColor::WHITE)
-			{
-				if (move.get()->getType() == MoveType::CASTLING)
-					moveValue += 100;
-				if (moveValue > bestMoveValue)
+				else if (m_colour == PieceColor::WHITE)
 				{
-					bestMoveValue = moveValue;
-					moveToMake = move;
+					if (move.get()->getType() == MoveType::CASTLING)
+						moveValue += 100;
+					if (moveValue > bestMoveValue)
+					{
+						bestMoveValue = moveValue;
+						moveToMake = move;
+					}
+					//Find the value of alpha, which is the best value that the white player can take
+					alpha = max(alpha, bestMoveValue);
+					//If alpha (best of white) is bigger than beta (best of black), the loop can be exit early
+					if (alpha >= beta)
+						break;
+
 				}
-				//Find the value of alpha, which is the best value that the white player can take
-				alpha = max(alpha, bestMoveValue);
-				//If alpha (best of white) is bigger than beta (best of black), the loop can be exit early
-				if (alpha >= beta)
-					break;
-					
 			}
 		}
 	}
@@ -263,4 +275,72 @@ void ChessPlayer::GenerateNextTurn(PieceColor opposingPlayerColor, Board*& outBo
 
 	//Reset EnPassantable status, like at the end of turn.
 	outStatus->setPieceEnPassantable(opposingPlayerColor, NULL);
+}
+
+void ChessPlayer::GenerateOpening()
+{
+	int randomize = 0;
+	if (m_colour == PieceColor::WHITE) {
+		randomize = rand() % 3;
+		if (randomize == 0)
+		{
+			//1e4 sicillian
+			return;
+		}
+		else if (randomize == 1)
+		{
+			//1d4 queens gambit
+			return;
+		}
+		else if (randomize == 2)
+		{
+			//1e4 caro-kann
+			return;
+		}
+		else {
+			return;
+		}
+	}
+	else if (m_colour == PieceColor::BLACK)
+	{
+		std::shared_ptr<Move> whiteMove = m_chess->getAllLog().top();
+		std::shared_ptr<Move> op1e4;
+		std::shared_ptr<Move> op1d4;
+		if (whiteMove == op1e4)
+		{
+			//Generate response to 1e4
+
+			//french defence or caro-kann defence or sicilian defence
+		}
+		else if (whiteMove == op1d4)
+		{
+			//play queens gambit declined or slav defence
+
+		}
+		//Randomize opening
+		else {
+			randomize = rand() % 5;
+			if (randomize == 0)
+			{
+				//french defence
+			}
+			else if (randomize == 1)
+			{
+				//caro-kann defence
+			}
+			else if (randomize == 2)
+			{
+				//sicilian defence
+			}
+			else if (randomize == 3)
+			{
+				//queens gambit declined
+			}
+			else if (randomize == 4)
+			{
+				//slav defence
+			}
+		}
+		//Delete the move checkers
+	}
 }

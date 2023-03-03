@@ -35,6 +35,7 @@ protected:
 	PieceColor		getColour() { return m_colour; }
 	int				minimax(Board* board, GameStatus* status, int depth, PieceColor currentPlayerColor, int alpha, int beta);
 	void GenerateNextTurn(PieceColor currentPlayerColor, Board*& outBoard, GameStatus*& outStatus, Board* currentBoard, GameStatus* currentStatus, shared_ptr<Move> moveToMake);
+	void GenerateOpening();
 
 
 private:
@@ -44,5 +45,8 @@ private:
 	Gameplay*	m_pGamePlay;
 	Game*		m_chess;
 	bool		m_bAI;
+
+	bool generatedOpening = false;
+	std::vector<std::shared_ptr<Move>> opening;
 };
 
