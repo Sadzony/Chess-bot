@@ -74,6 +74,7 @@ bool ChessPlayer::chooseAIMove(std::shared_ptr<Move>& moveToMake)
 		//Take the move from the front of the opening list, and remove it from the list
 		moveToMake = opening.front();
 		opening.erase(opening.begin());
+		return true;
 	}
 	//if opening completed, move on to minimax
 	else {
@@ -285,19 +286,34 @@ void ChessPlayer::GenerateOpening()
 		if (randomize == 0)
 		{
 			//1e4 sicillian
+			std::shared_ptr<Piece> p = m_pBoard->getSquare(1, 3)->getOccupyingPiece();
+			opening.emplace_back(new Move(MoveType::NORMAL, 1, 3, 3, 3, p));
+			generatedOpening = true;
 			return;
 		}
 		else if (randomize == 1)
 		{
 			//1d4 queens gambit
+			std::shared_ptr<Piece> p = m_pBoard->getSquare(1, 4)->getOccupyingPiece();
+			opening.emplace_back(new Move(MoveType::NORMAL, 1, 4, 3, 4, p));
+			std::shared_ptr<Piece> p2 = m_pBoard->getSquare(1, 5)->getOccupyingPiece();
+			opening.emplace_back(new Move(MoveType::NORMAL, 1, 5, 3, 5, p2));
+			generatedOpening = true;
 			return;
 		}
 		else if (randomize == 2)
 		{
 			//1e4 caro-kann
+			std::shared_ptr<Piece> p = m_pBoard->getSquare(1, 3)->getOccupyingPiece();
+			opening.emplace_back(new Move(MoveType::NORMAL, 1, 3, 3, 3, p));
+			std::shared_ptr<Piece> p2 = m_pBoard->getSquare(1, 4)->getOccupyingPiece();
+			opening.emplace_back(new Move(MoveType::NORMAL, 1, 4, 3, 4, p));
+			generatedOpening = true;
 			return;
 		}
 		else {
+			//no opening
+			generatedOpening = true;
 			return;
 		}
 	}
@@ -306,16 +322,88 @@ void ChessPlayer::GenerateOpening()
 		std::shared_ptr<Move> whiteMove = m_chess->getAllLog().top();
 		std::shared_ptr<Move> op1e4;
 		std::shared_ptr<Move> op1d4;
-		if (whiteMove == op1e4)
+		//1e4
+		if (m_pBoard->getSquare(3, 3)->hasOccupyingPiece())
+		{
+			std::shared_ptr<Piece> op1e4Piece = m_pBoard->getSquare(3, 3)->getOccupyingPiece();
+			op1e4 = std::make_shared<Move>(MoveType::NORMAL, 1, 3, 3, 3, op1e4Piece);
+		}
+		//1d4
+		else if (m_pBoard->getSquare(3, 4)->hasOccupyingPiece())
+		{
+			std::shared_ptr<Piece> op1d4Piece = m_pBoard->getSquare(3, 4)->getOccupyingPiece();
+			op1d4 = std::make_shared<Move>(MoveType::NORMAL, 1, 4, 3, 4, op1d4Piece);
+		}
+
+
+		
+		
+		
+		if (op1e4 != nullptr && *whiteMove == *op1e4)
 		{
 			//Generate response to 1e4
-
-			//french defence or caro-kann defence or sicilian defence
+			randomize = rand() % 3;
+			if (randomize == 0)
+			{
+				//french defence
+				std::shared_ptr<Piece> p = m_pBoard->getSquare(6, 3)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 3, 5, 3, p));
+				generatedOpening = true;
+				return;
+			}
+			else if (randomize == 1)
+			{
+				//caro-kann defence
+				std::shared_ptr<Piece> p = m_pBoard->getSquare(6, 5)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 5, 5, 5, p));
+				std::shared_ptr<Piece> p2 = m_pBoard->getSquare(6, 4)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 4, 4, 4, p2));
+				generatedOpening = true;
+				return;
+			}
+			else if (randomize == 2)
+			{
+				//sicillian defence
+				std::shared_ptr<Piece> p = m_pBoard->getSquare(6, 5)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 5, 4, 5, p));
+				generatedOpening = true;
+				return;
+			}
+			else {
+				//no opening
+				generatedOpening = true;
+				return;
+			}
 		}
-		else if (whiteMove == op1d4)
+		else if (op1d4 != nullptr && *whiteMove == *op1d4)
 		{
-			//play queens gambit declined or slav defence
+			randomize = rand() % 2;
+			if (randomize == 0)
+			{
+				//queens gambit declined
+				std::shared_ptr<Piece> p = m_pBoard->getSquare(6, 4)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 4, 4, 4, p));
+				std::shared_ptr<Piece> p2 = m_pBoard->getSquare(6, 5)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 5, 5, 5, p2));
+				generatedOpening = true;
+				return;
+			}
+			else if (randomize == 1)
+			{
+				//slav defence
+				std::shared_ptr<Piece> p = m_pBoard->getSquare(6, 4)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 4, 4, 4, p));
+				std::shared_ptr<Piece> p2 = m_pBoard->getSquare(6, 5)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 5, 5, 5, p2));
 
+				generatedOpening = true;
+				return;
+			}
+			else {
+				//no opening
+				generatedOpening = true;
+				return;
+			}
 		}
 		//Randomize opening
 		else {
@@ -323,24 +411,54 @@ void ChessPlayer::GenerateOpening()
 			if (randomize == 0)
 			{
 				//french defence
+				std::shared_ptr<Piece> p = m_pBoard->getSquare(6, 3)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 3, 5, 3, p));
+				generatedOpening = true;
+				return;
 			}
 			else if (randomize == 1)
 			{
 				//caro-kann defence
+				std::shared_ptr<Piece> p = m_pBoard->getSquare(6, 5)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 5, 6, 4, p));
+				std::shared_ptr<Piece> p2 = m_pBoard->getSquare(6, 4)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 4, 4, 4, p2));
+				generatedOpening = true;
+				return;
 			}
 			else if (randomize == 2)
 			{
 				//sicilian defence
+				std::shared_ptr<Piece> p = m_pBoard->getSquare(6, 5)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 5, 4, 5, p));
+				generatedOpening = true;
+				return;
 			}
 			else if (randomize == 3)
 			{
 				//queens gambit declined
+				std::shared_ptr<Piece> p = m_pBoard->getSquare(6, 4)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 4, 4, 4, p));
+				std::shared_ptr<Piece> p2 = m_pBoard->getSquare(6, 5)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 5, 5, 5, p2));
+				generatedOpening = true;
+				return;
 			}
 			else if (randomize == 4)
 			{
 				//slav defence
+				std::shared_ptr<Piece> p = m_pBoard->getSquare(6, 4)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 4, 4, 4, p));
+				std::shared_ptr<Piece> p2 = m_pBoard->getSquare(6, 5)->getOccupyingPiece();
+				opening.emplace_back(new Move(MoveType::NORMAL, 6, 5, 5, 5, p2));
+				generatedOpening = true;
+				return;
+			}
+			else {
+				//no opening
+				generatedOpening = true;
+				return;
 			}
 		}
-		//Delete the move checkers
 	}
 }

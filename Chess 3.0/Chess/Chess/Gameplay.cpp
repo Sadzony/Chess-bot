@@ -819,7 +819,7 @@ std::vector<std::shared_ptr<Move>> Gameplay::getPossibleMoves(GameStatus* status
 			}
 			if(!status->isKingMove(piece->getColor()) && !status->isLastColRookMove(piece->getColor()))
 			{
-				if(!board->getSquare(fromRow, fromCol+1)->occupiedState() && !board->getSquare(fromRow, fromCol+2)->occupiedState())
+				if(!board->getSquare(fromRow, fromCol+1)->occupiedState() && !board->getSquare(fromRow, fromCol+2)->occupiedState() && !board->getSquare(fromRow, fromCol + 3)->occupiedState())
 					possibleMove.emplace_back(new Move(MoveType::CASTLING, fromRow, fromCol, fromRow, fromCol+2, piece));
 			}
 

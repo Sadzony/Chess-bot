@@ -856,7 +856,7 @@ void initialize()
 void newGame()
 {
     chess = new Game();
-   // srand(time(NULL));
+    srand(time(NULL));
     selectedRow = 1; selectedCol = 1;
     moveToRow = 1; moveToCol = 1;
     selected = false;

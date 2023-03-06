@@ -71,8 +71,8 @@ int Board::GetHeuristic(GameStatus* p_status)
 
 
 				//Generate space bonus from piece square table
-				//int pieceSquareValue = pieceSquareTables[std::make_pair(color, type)].at(col).at(row);
-				//pip.value += pieceSquareValue;
+				int pieceSquareValue = pieceSquareTables[std::make_pair(color, type)].at(col).at(row);
+				pip.value += pieceSquareValue;
 
 				//attack table for pawns
 				if (type == PieceType::PAWN && color == PieceColor::WHITE)
@@ -164,7 +164,10 @@ int Board::GetHeuristic(GameStatus* p_status)
 		{
 			int difference = defenceValue - threatValue;
 			if (difference <= 0)
+			{
 				multiplier = 0.9f + (0.1f * difference);
+			}
+				
 		}
 		heuristic += pip.value * multiplier;
 
@@ -180,13 +183,15 @@ int Board::GetHeuristic(GameStatus* p_status)
 		{
 			int difference = defenceValue - threatValue;
 			if (difference <= 0)
+			{
 				multiplier = 0.9f + (0.1f * difference);
+			}
 		}
 		heuristic -= pip.value * multiplier;
 	}
 	//Determine that this board is now in endgame
-	//if (abs(heuristic) > 1000 || pieceCount < 8)
-	//	GenerateEndgameTable();
+	if (abs(heuristic) > 1000 || pieceCount < 8)
+		GenerateEndgameTable();
 	return heuristic;
 }
 
@@ -354,7 +359,7 @@ void Board::GeneratePieceSquareTables()
 	//White King Early game
 	pieceTable =
 	{ {
-		{ 20,  30,  10,   0,   0,  10,  30,  20},
+		{ 20,  20,  30,   0,  10,  30,  20,  20},
 		{ 20,  20,   0,   0,   0,   0,  20,  20},
 		{-10, -20, -20, -20, -20, -20, -20, -10},
 		{-20, -30, -30, -40, -40, -30, -30, -20},
@@ -374,7 +379,7 @@ void Board::GeneratePieceSquareTables()
 		{-20, -30, -30, -40, -40, -30, -30, -20},
 		{-10, -20, -20, -20, -20, -20, -20, -10},
 		{ 20,  20,   0,   0,   0,   0,  20,  20},
-		{ 20,  30,  10,   0,   0,  10,  30,  20}
+		{ 20,  20,  30,   0,   0,  30,  20,  20}
 	} };
 	pieceSquareTables[std::make_pair(PieceColor::BLACK, PieceType::KING)] = pieceTable;
 }
