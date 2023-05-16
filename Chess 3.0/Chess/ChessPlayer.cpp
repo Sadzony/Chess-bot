@@ -259,20 +259,20 @@ void ChessPlayer::GenerateNextTurn(PieceColor opposingPlayerColor, Board*& outBo
 	outStatus = new GameStatus(*currentStatus);
 	Gameplay::move(outStatus, outBoard, moveToMake);
 	//Check for promotion
-	Move* move = moveToMake.get();
-	Piece* piece = move->getMovedPiece().get();
-	if (piece->getType() == PieceType::PAWN && piece->getColor() == PieceColor::WHITE)
-	{
-		std::pair<int, int> dest = move->getDestinationPosition();
-		if (dest.first == 7)
-			Gameplay::pawnPromotion(outBoard, 7, dest.second, PieceType::QUEEN);
-	}
-	else if (piece->getType() == PieceType::PAWN && piece->getColor() == PieceColor::BLACK)
-	{
-		std::pair<int, int> dest = move->getDestinationPosition();
-		if (dest.first == 0)
-			Gameplay::pawnPromotion(outBoard, 0, dest.second, PieceType::QUEEN);
-	}
+	//Move* move = moveToMake.get();
+	//Piece* piece = move->getMovedPiece().get();
+	//if (piece->getType() == PieceType::PAWN && piece->getColor() == PieceColor::WHITE)
+	//{
+	//	std::pair<int, int> dest = move->getDestinationPosition();
+	//	if (dest.first == 7)
+	//		Gameplay::pawnPromotion(outBoard, 7, dest.second, PieceType::QUEEN);
+	//}
+	//else if (piece->getType() == PieceType::PAWN && piece->getColor() == PieceColor::BLACK)
+	//{
+	//	std::pair<int, int> dest = move->getDestinationPosition();
+	//	if (dest.first == 0)
+	//		Gameplay::pawnPromotion(outBoard, 0, dest.second, PieceType::QUEEN);
+	//}
 
 	//Reset EnPassantable status, like at the end of turn.
 	outStatus->setPieceEnPassantable(opposingPlayerColor, NULL);
